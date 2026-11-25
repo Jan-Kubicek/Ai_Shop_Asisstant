@@ -16,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import cz.example.shopassistant.ai.application.ModelPromptValidator;
 import cz.example.shopassistant.media.MediaApi;
 import cz.example.shopassistant.requests.RequestsApi;
 import cz.example.shopassistant.requests.RequestStatusChangedEvent;
@@ -31,13 +32,15 @@ public class RequestsService implements RequestsApi {
     private final MediaApi mediaApi;
     private final ObjectMapper objectMapper;
     private final ApplicationEventPublisher events;
+    private final ModelPromptValidator modelPromptValidator;
 
     public RequestsService(RequestRepository repository, MediaApi mediaApi, ObjectMapper objectMapper,
-            ApplicationEventPublisher events) {
+            ApplicationEventPublisher events, ModelPromptValidator modelPromptValidator) {
         this.repository = repository;
         this.mediaApi = mediaApi;
         this.objectMapper = objectMapper;
         this.events = events;
+        this.modelPromptValidator = modelPromptValidator;
     }
 
     public CreatedRequestView create(String userId, MultipartFile photo, String description, String optionsJson) {
@@ -48,6 +51,11 @@ public class RequestsService implements RequestsApi {
         MediaApi.MediaFile media = mediaApi.store(userId, photo);
 
         Request.RequestOptions options = parseOptions(optionsJson);
+        try {
+            modelPromptValidator.validate(options.getModelDescription());
+        } catch (cz.example.shopassistant.ai.application.AiException exception) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, exception.getMessage());
+        }
 
         Request request = new Request();
         request.setUserId(userId);
@@ -285,6 +293,9 @@ public class RequestsService implements RequestsApi {
             }
             if (map.containsKey("generateModelPhoto")) {
                 options.setGenerateModelPhoto(Boolean.TRUE.equals(map.get("generateModelPhoto")));
+            }
+            if (map.get("modelDescription") != null) {
+                options.setModelDescription(map.get("modelDescription").toString());
             }
             if (map.get("sizeFrom") != null) {
                 options.setSizeFrom(map.get("sizeFrom").toString());

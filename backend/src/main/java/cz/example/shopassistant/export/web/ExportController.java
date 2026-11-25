@@ -136,6 +136,8 @@ public class ExportController {
                     objectMapper.readTree(data.socialTextJson()),
                     data.modelImageUrl(),
                     objectMapper.readTree(data.wooJson()),
+                    data.marketingTextJson() != null && !data.marketingTextJson().isBlank()
+                            ? objectMapper.readTree(data.marketingTextJson()) : null,
                     data.createdAt() != null ? data.createdAt().toString() : null);
         } catch (Exception exception) {
             throw new IllegalStateException("Výsledek se nepodařilo načíst.", exception);
@@ -148,6 +150,7 @@ public class ExportController {
             JsonNode socialText,
             String modelImageUrl,
             JsonNode wooJson,
+            JsonNode marketingText,
             String createdAt) {
     }
 }

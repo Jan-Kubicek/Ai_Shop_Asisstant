@@ -21,6 +21,8 @@ public class RequestResult {
 
     private String wooJson;
 
+    private String marketingTextJson;
+
     private String modelImageUrl;
 
     private Instant createdAt;
@@ -37,6 +39,8 @@ public class RequestResult {
     public void setSocialTextJson(String socialTextJson) { this.socialTextJson = socialTextJson; }
     public String getWooJson() { return wooJson; }
     public void setWooJson(String wooJson) { this.wooJson = wooJson; }
+    public String getMarketingTextJson() { return marketingTextJson; }
+    public void setMarketingTextJson(String marketingTextJson) { this.marketingTextJson = marketingTextJson; }
     public String getModelImageUrl() { return modelImageUrl; }
     public void setModelImageUrl(String modelImageUrl) { this.modelImageUrl = modelImageUrl; }
     public Instant getCreatedAt() { return createdAt; }

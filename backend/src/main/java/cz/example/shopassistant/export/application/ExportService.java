@@ -31,12 +31,13 @@ public class ExportService implements ExportApi {
 
     @Override
     public void saveResult(String requestId, String webTextJson, String socialTextJson,
-            String wooJson, String modelImageUrl) {
+            String wooJson, String marketingTextJson, String modelImageUrl) {
         RequestResult result = repository.findByRequestId(requestId).orElseGet(RequestResult::new);
         result.setRequestId(requestId);
         result.setWebTextJson(webTextJson);
         result.setSocialTextJson(socialTextJson);
         result.setWooJson(wooJson);
+        result.setMarketingTextJson(marketingTextJson);
         result.setModelImageUrl(modelImageUrl);
         Instant now = Instant.now();
         if (result.getCreatedAt() == null) {
@@ -131,6 +132,9 @@ public class ExportService implements ExportApi {
             addEntry(zip, "product-text.json", result.webTextJson());
             addEntry(zip, "social-text.json", result.socialTextJson());
             addEntry(zip, "woo-product.json", result.wooJson());
+            if (result.marketingTextJson() != null && !result.marketingTextJson().isBlank()) {
+                addEntry(zip, "marketing-text.json", result.marketingTextJson());
+            }
             if (image != null && image.length > 0) {
                 addEntry(zip, "product-image.bin", image);
             }
@@ -165,6 +169,7 @@ public class ExportService implements ExportApi {
                 entity.getWebTextJson(),
                 entity.getSocialTextJson(),
                 entity.getWooJson(),
+                entity.getMarketingTextJson(),
                 entity.getModelImageUrl(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt());

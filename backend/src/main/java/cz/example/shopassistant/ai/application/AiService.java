@@ -20,6 +20,8 @@ public class AiService implements AiApi {
     private static final String PRODUCT_SCHEMA = "schemas/product-text.schema.json";
     private static final String SOCIAL_PROMPT = "social-post.v1.txt";
     private static final String SOCIAL_SCHEMA = "schemas/social-text.schema.json";
+    private static final String MARKETING_PROMPT = "marketing-text.v1.txt";
+    private static final String MARKETING_SCHEMA = "schemas/marketing-text.schema.json";
 
     private final AiTextClient client;
     private final PromptLoader promptLoader;
@@ -45,6 +47,14 @@ public class AiService implements AiApi {
                 "userDescription", description,
                 "tone", tone));
         return generateAndValidate(prompt, SOCIAL_SCHEMA);
+    }
+
+    @Override
+    public GeneratedText generateMarketingTextDetailed(String description, String tone) {
+        String prompt = promptLoader.render(MARKETING_PROMPT, Map.of(
+                "userDescription", description,
+                "tone", tone));
+        return generateAndValidate(prompt, MARKETING_SCHEMA);
     }
 
     private GeneratedText generateAndValidate(String prompt, String schema) {

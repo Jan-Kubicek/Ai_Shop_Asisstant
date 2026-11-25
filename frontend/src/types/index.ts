@@ -34,6 +34,7 @@ export interface RequestOptions {
   generateWebText: boolean;
   generateSocialPost: boolean;
   generateModelPhoto: boolean;
+  modelDescription?: string;
   sizeFrom?: string;
   sizeTo?: string;
   basePrice?: number;
@@ -79,6 +80,7 @@ export interface RequestResult {
   socialText?: SocialText;
   modelImageUrl?: string;
   wooJson?: unknown;
+  marketingText?: Record<string, unknown>;
   createdAt: string;
 }
 

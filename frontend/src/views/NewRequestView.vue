@@ -19,6 +19,7 @@ const options = reactive<RequestOptions>({
   generateWebText: true,
   generateSocialPost: true,
   generateModelPhoto: false,
+  modelDescription: "",
   sizeFrom: "",
   sizeTo: "",
   basePrice: undefined,
@@ -77,6 +78,24 @@ async function submit() {
             ></textarea>
             <span class="form-hint">
               Stačí pár vět. Čím konkrétnější popis, tím lepší výsledek.
+            </span>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="model-description">
+              Popis modelu (kdo má být na fotce, co má mít na sobě)
+            </label>
+            <textarea
+              id="model-description"
+              v-model="options.modelDescription"
+              class="app-textarea"
+              data-testid="model-description"
+              placeholder="Např. dítě v věku 4 let v šedé čepici a teplé bundě, neutrální pozadí."
+              rows="3"
+            ></textarea>
+            <span class="form-hint">
+              Použije se jen pokud zaškrtnete fotku produktu na modelovi.
+              Popis nesmí obsahovat nahotu ani sexualizaci.
             </span>
           </div>
         </AppCard>

@@ -64,11 +64,14 @@ public class Request {
         private boolean generateWebText;
         private boolean generateSocialPost;
         private boolean generateModelPhoto;
+        private String modelDescription;
         private String sizeFrom;
         private String sizeTo;
         private java.math.BigDecimal basePrice;
         private java.math.BigDecimal priceIncreasePercent;
 
+        public String getModelDescription() { return modelDescription; }
+        public void setModelDescription(String modelDescription) { this.modelDescription = modelDescription; }
         public String getSizeFrom() { return sizeFrom; }
         public void setSizeFrom(String sizeFrom) { this.sizeFrom = sizeFrom; }
         public String getSizeTo() { return sizeTo; }

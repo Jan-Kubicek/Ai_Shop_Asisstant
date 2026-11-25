@@ -61,7 +61,23 @@ public class MediaService implements MediaApi {
         } catch (IOException exception) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fotku se nepodařilo načíst.");
         }
+        return storeBytes(ownerId, raw);
+    }
 
+    @Override
+    public MediaApi.MediaFile storeBytes(String ownerId, byte[] content, String filename,
+            String contentType) {
+        if (content == null || content.length == 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Obrázek je prázdný.");
+        }
+        if (content.length > maxBytes) {
+            throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE,
+                    "Obrázek je příliš velký (max. " + (maxBytes / (1024 * 1024)) + " MB).");
+        }
+        return storeBytes(ownerId, content);
+    }
+
+    private MediaApi.MediaFile storeBytes(String ownerId, byte[] raw) {
         String format = detectFormat(raw);
         if (format == null) {
             throw new ResponseStatusException(HttpStatus.UNSUPPORTED_MEDIA_TYPE,
