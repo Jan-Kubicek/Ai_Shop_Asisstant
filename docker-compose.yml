@@ -70,6 +70,7 @@ services:
     environment:
       APP_DOMAIN: $APP_DOMAIN
       ACME_EMAIL: $ACME_EMAIL
+      CADDY_SITE_ADDRESS: ${CADDY_SITE_ADDRESS:-$APP_DOMAIN}
     volumes:
       - ./infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data

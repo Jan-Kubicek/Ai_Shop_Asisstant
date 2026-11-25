@@ -14,9 +14,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.example.shopassistant.ai.AiApi;
 import cz.example.shopassistant.ai.AiApi.GeneratedText;
-import cz.example.shopassistant.ai.application.AiImageClient;
-import cz.example.shopassistant.ai.application.AiImageResult;
-import cz.example.shopassistant.ai.application.ModelPromptValidator;
+import cz.example.shopassistant.ai.AiImageApi;
+import cz.example.shopassistant.ai.AiImageApi.GeneratedImage;
 import cz.example.shopassistant.export.ExportApi;
 import cz.example.shopassistant.media.MediaApi;
 import cz.example.shopassistant.pipeline.domain.AiCall;
@@ -37,10 +36,9 @@ public class PipelineWorker {
 
     private final RequestsApi requestsApi;
     private final AiApi aiApi;
-    private final AiImageClient imageClient;
+    private final AiImageApi imageApi;
     private final ExportApi exportApi;
     private final MediaApi mediaApi;
-    private final ModelPromptValidator modelPromptValidator;
     private final ObjectMapper objectMapper;
     private final AiCallRepository aiCallRepository;
     private final String provider;
@@ -48,19 +46,17 @@ public class PipelineWorker {
     public PipelineWorker(
             RequestsApi requestsApi,
             AiApi aiApi,
-            AiImageClient imageClient,
+            AiImageApi imageApi,
             ExportApi exportApi,
             MediaApi mediaApi,
-            ModelPromptValidator modelPromptValidator,
             ObjectMapper objectMapper,
             AiCallRepository aiCallRepository,
             @Value("${app.ai.text-provider:gemini}") String provider) {
         this.requestsApi = requestsApi;
         this.aiApi = aiApi;
-        this.imageClient = imageClient;
+        this.imageApi = imageApi;
         this.exportApi = exportApi;
         this.mediaApi = mediaApi;
-        this.modelPromptValidator = modelPromptValidator;
         this.objectMapper = objectMapper;
         this.aiCallRepository = aiCallRepository;
         this.provider = provider;
@@ -86,10 +82,10 @@ public class PipelineWorker {
                 int imageCompletionTokens = 0;
                 if (wantsModelPhoto(request)) {
                     String modelDescription = option(request, "modelDescription");
-                    modelPromptValidator.validate(modelDescription);
+                    imageApi.validateModelDescription(modelDescription);
                     String prompt = "Vytvoř marketingovou fotku produktu. "
                             + "Popis modelu: " + modelDescription;
-                    AiImageResult image = imageClient.generate(prompt);
+                    GeneratedImage image = imageApi.generate(prompt);
                     cz.example.shopassistant.media.MediaApi.MediaFile stored = mediaApi.storeBytes(
                             request.userId(), image.image(), image.description() + ".png",
                             image.contentType());

@@ -16,7 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import cz.example.shopassistant.ai.application.ModelPromptValidator;
+import cz.example.shopassistant.ai.AiImageApi;
 import cz.example.shopassistant.media.MediaApi;
 import cz.example.shopassistant.requests.RequestsApi;
 import cz.example.shopassistant.requests.RequestStatusChangedEvent;
@@ -32,15 +32,15 @@ public class RequestsService implements RequestsApi {
     private final MediaApi mediaApi;
     private final ObjectMapper objectMapper;
     private final ApplicationEventPublisher events;
-    private final ModelPromptValidator modelPromptValidator;
+    private final AiImageApi imageApi;
 
     public RequestsService(RequestRepository repository, MediaApi mediaApi, ObjectMapper objectMapper,
-            ApplicationEventPublisher events, ModelPromptValidator modelPromptValidator) {
+            ApplicationEventPublisher events, AiImageApi imageApi) {
         this.repository = repository;
         this.mediaApi = mediaApi;
         this.objectMapper = objectMapper;
         this.events = events;
-        this.modelPromptValidator = modelPromptValidator;
+        this.imageApi = imageApi;
     }
 
     public CreatedRequestView create(String userId, MultipartFile photo, String description, String optionsJson) {
@@ -52,8 +52,8 @@ public class RequestsService implements RequestsApi {
 
         Request.RequestOptions options = parseOptions(optionsJson);
         try {
-            modelPromptValidator.validate(options.getModelDescription());
-        } catch (cz.example.shopassistant.ai.application.AiException exception) {
+            imageApi.validateModelDescription(options.getModelDescription());
+        } catch (IllegalArgumentException exception) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, exception.getMessage());
         }
 

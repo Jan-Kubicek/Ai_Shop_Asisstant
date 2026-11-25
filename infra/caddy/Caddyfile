@@ -3,7 +3,7 @@
 	admin off
 }
 
-{$APP_DOMAIN} {
+{$CADDY_SITE_ADDRESS} {
 	encode zstd gzip
 
 	handle /api/* {

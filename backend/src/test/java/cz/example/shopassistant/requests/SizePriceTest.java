@@ -15,7 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import cz.example.shopassistant.ai.application.ModelPromptValidator;
+import cz.example.shopassistant.ai.AiImageApi;
 import cz.example.shopassistant.media.MediaApi;
 import cz.example.shopassistant.requests.application.RequestsService;
 import cz.example.shopassistant.requests.application.RequestsService.CreatedRequestView;
@@ -35,7 +35,7 @@ class SizePriceTest {
         when(repository.save(any(Request.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         RequestsService service = new RequestsService(
-                repository, mediaApi, new ObjectMapper(), events, mock(ModelPromptValidator.class));
+                repository, mediaApi, new ObjectMapper(), events, mock(AiImageApi.class));
 
         String options = """
                 {
