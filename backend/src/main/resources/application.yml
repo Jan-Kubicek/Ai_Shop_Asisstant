@@ -63,6 +63,8 @@ app:
     gemini-model: ${AI_MODEL_TEXT:gemini-3.5-flash}
     gemini-base-url: ${AI_BASE_URL:https://generativelanguage.googleapis.com}
     openai-api-key: ${OPENAI_API_KEY:}
+    openai-model: ${OPENAI_MODEL:gpt-4.1-mini}
+    openai-base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
     timeout-seconds: ${AI_REQUEST_TIMEOUT_SECONDS:60}
     max-retries: ${AI_MAX_RETRIES:3}
     temperature: ${AI_TEMPERATURE:0.7}

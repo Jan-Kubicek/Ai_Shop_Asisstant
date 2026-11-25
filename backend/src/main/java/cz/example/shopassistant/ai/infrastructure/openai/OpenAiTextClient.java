@@ -15,6 +15,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -152,7 +153,9 @@ public class OpenAiTextClient implements AiTextClient {
         record Message(String content) {
         }
 
-        record Usage(int promptTokens, int completionTokens) {
+        record Usage(
+                @JsonProperty("prompt_tokens") int promptTokens,
+                @JsonProperty("completion_tokens") int completionTokens) {
         }
     }
 }

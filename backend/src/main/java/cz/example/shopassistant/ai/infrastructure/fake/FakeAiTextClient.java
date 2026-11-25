@@ -1,7 +1,7 @@
 package cz.example.shopassistant.ai.infrastructure.fake;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import cz.example.shopassistant.ai.application.AiTextClient;
@@ -11,7 +11,7 @@ import cz.example.shopassistant.ai.application.AiTextResult;
  * Falešná implementace pro vývoj a testy. Vrací pevný JSON bez volání API.
  */
 @Component
-@Profile("fake-ai")
+@ConditionalOnProperty(name = "app.ai.text-provider", havingValue = "fake")
 public class FakeAiTextClient implements AiTextClient {
 
     private static final String FIXED_RESPONSE = """

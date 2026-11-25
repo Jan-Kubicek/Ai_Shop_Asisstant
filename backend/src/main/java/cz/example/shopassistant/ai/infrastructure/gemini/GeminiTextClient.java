@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
@@ -27,7 +28,7 @@ import cz.example.shopassistant.ai.application.AiTextResult;
  * Klient pro Google Gemini (Generative Language API).
  */
 @Component
-@org.springframework.context.annotation.Profile("!fake-ai")
+@ConditionalOnProperty(name = "app.ai.text-provider", havingValue = "gemini", matchIfMissing = true)
 public class GeminiTextClient implements AiTextClient {
 
     private static final Logger LOG = LoggerFactory.getLogger(GeminiTextClient.class);
