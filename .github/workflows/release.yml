@@ -30,7 +30,7 @@ jobs:
 
       - name: Metadata backendu
         id: meta-backend
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ghcr.io/${{ github.repository }}/backend
           tags: |
@@ -49,7 +49,7 @@ jobs:
 
       - name: Metadata frontendu
         id: meta-frontend
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ghcr.io/${{ github.repository }}/frontend
           tags: |
