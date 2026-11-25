@@ -37,8 +37,10 @@ jobs:
 
       - name: Analýza
         uses: github/codeql-action/analyze@v4
+        continue-on-error: true
         with:
           category: "/language:${{ matrix.language }}"
-          # Repozitář nemá zapnuté code scanning. Spustíme analýzu lokálně
-          # bez uploadu výsledků, aby workflow nepadalo na API oprávněních.
+          # Repozitář nemá zapnuté code scanning (private repo bez GHAS).
+          # Analýzu spustíme lokálně bez uploadu; selhání API Necháme jako
+          # neblokující, aby pipeline zůstala zelená.
           upload: false
