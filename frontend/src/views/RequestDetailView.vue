@@ -212,6 +212,9 @@ watch(
                 <TextResultCard title="Krátký popis" :text="result.webText.shortDescription" />
                 <TextResultCard title="Instagram" :text="instagramText" />
                 <TextResultCard title="Facebook" :text="facebookText" />
+                <AppCard v-if="result.marketingText" title="Marketing a byznys">
+                  <JsonViewer :value="result.marketingText" />
+                </AppCard>
               </div>
               <div class="row">
                 <AppButton data-testid="edit-result" variant="secondary" size="sm" @click="editing = true">

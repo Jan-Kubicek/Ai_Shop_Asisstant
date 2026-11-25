@@ -51,7 +51,8 @@ class ExportServiceTest {
     @Test
     void zipObsahujeTextyAExport() {
         ResultData data = new ResultData("id", "req-1", WEB, SOCIAL,
-                service.buildWooJson("req-1", WEB, SOCIAL, "media-1", java.util.List.of()), null, null, null);
+                service.buildWooJson("req-1", WEB, SOCIAL, "media-1", java.util.List.of()),
+                null, null, null, null);
 
         byte[] zip = service.createZip(data, "image".getBytes(StandardCharsets.UTF_8));
 
