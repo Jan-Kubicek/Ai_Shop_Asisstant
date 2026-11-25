@@ -40,6 +40,10 @@ app:
     secret: ${JWT_SECRET:}
     access-ttl-minutes: ${JWT_ACCESS_TTL_MINUTES:15}
     refresh-ttl-days: ${JWT_REFRESH_TTL_DAYS:14}
+    cookie-secure: ${JWT_COOKIE_SECURE:false}
+  seed-admin:
+    email: ${SEED_ADMIN_EMAIL:}
+    password: ${SEED_ADMIN_PASSWORD:}
   storage:
     type: ${STORAGE_TYPE:local}
     local-path: ${STORAGE_LOCAL_PATH:./data/uploads}

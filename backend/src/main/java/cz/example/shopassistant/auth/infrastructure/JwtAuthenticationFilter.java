@@ -8,7 +8,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import cz.example.shopassistant.auth.application.JwtService;
@@ -23,7 +22,6 @@ import jakarta.servlet.http.HttpServletResponse;
  * přihlášeného uživatele do kontextu. Neplatný token se ignoruje a požadavek
  * pokračuje jako anonymní.
  */
-@Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final String BEARER_PREFIX = "Bearer ";

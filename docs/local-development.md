@@ -56,11 +56,36 @@ Očekávaná odpověď:
 ~~~
 
 Endpoint <code>/actuator/health</code> je veřejný, protože ho používá
-healthcheck v Dockeru. Ostatní endpointy vyžadují autentizaci; modul
-<code>auth</code> zatím není implementovaný, takže přihlášení ve Fázi 0
-vrací chybu. To je očekávané.
+healthcheck v Dockeru. Ostatní endpointy vyžadují přihlášení.
 
-## 3. Frontend
+## 3. Vytvoření admina
+
+Admin se zakládá pouze při spuštění s parametrem <code>--seed-admin</code>
+a jen tehdy, když je kolekce uživatelů prázdná. Údaje se předávají
+proměnnými prostředí, nikdy se necommitují:
+
+~~~bash
+cd backend
+./mvnw package -DskipTests
+
+SEED_ADMIN_EMAIL="admin@example.com" \
+SEED_ADMIN_PASSWORD="zvolte-silne-heslo" \
+java -jar target/shop-assistant-0.1.0-SNAPSHOT.jar --seed-admin
+~~~
+
+Windows PowerShell:
+
+~~~powershell
+$env:SEED_ADMIN_EMAIL = "admin@example.com"
+$env:SEED_ADMIN_PASSWORD = "zvolte-silne-heslo"
+java -jar target/shop-assistant-0.1.0-SNAPSHOT.jar --seed-admin
+~~~
+
+Po vytvoření uživatele už parametr <code>--seed-admin</code> není potřeba;
+přihlaste se na <code>http://localhost:5173</code>. Případné další účty
+přidá administrace v dalších fázích.
+
+## 4. Frontend
 
 ~~~bash
 cd frontend
@@ -71,7 +96,7 @@ npm run dev
 Frontend běží na <code>http://localhost:5173</code>. Neočekávaný uživatel
 je přesměrován na <code>/login</code>, kde se zobrazí přihlašovací formulář.
 
-## 4. Testy a CI
+## 5. Testy a CI
 
 Lokálně spusťte stejné příkazy jako CI:
 

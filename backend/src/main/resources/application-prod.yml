@@ -4,6 +4,10 @@ springdoc:
   swagger-ui:
     enabled: false
 
+app:
+  jwt:
+    cookie-secure: true
+
 server:
   forward-headers-strategy: framework
 
