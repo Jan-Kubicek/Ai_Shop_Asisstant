@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
  * Převádí výjimky na jednotný chybový formát popsaný v {@code docs/api.md}.
@@ -41,6 +43,11 @@ public class ApiExceptionHandler {
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     ResponseEntity<ApiErrorBody> handleTooLarge(MaxUploadSizeExceededException exception) {
         return build(HttpStatus.PAYLOAD_TOO_LARGE, "PAYLOAD_TOO_LARGE", "Soubor je příliš velký.");
+    }
+
+    @ExceptionHandler({ NoResourceFoundException.class, NoHandlerFoundException.class })
+    ResponseEntity<ApiErrorBody> handleNotFound(Exception exception) {
+        return build(HttpStatus.NOT_FOUND, "NOT_FOUND", "Zdroj neexistuje.");
     }
 
     @ExceptionHandler(Exception.class)
