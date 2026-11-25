@@ -54,13 +54,33 @@ async function tryRefresh(): Promise<boolean> {
   return refreshPromise;
 }
 
-export interface RequestOptions extends Omit<RequestInit, "body"> {
+export interface RequestOptions {
+  method?: string;
+  headers?: HeadersInit;
   body?: unknown;
   rawBody?: BodyInit;
   skipRefresh?: boolean;
+  signal?: AbortSignal;
 }
 
-export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+function buildInit(
+  options: RequestOptions,
+  headers: Headers,
+  body: BodyInit | undefined,
+): RequestInit {
+  return {
+    method: options.method ?? "GET",
+    headers,
+    body,
+    credentials: "include",
+    signal: options.signal,
+  };
+}
+
+export async function request<T>(
+  path: string,
+  options: RequestOptions = {},
+): Promise<T> {
   const headers = new Headers(options.headers);
   let body: BodyInit | undefined = options.rawBody;
 
@@ -73,12 +93,7 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
     headers.set("Authorization", "Bearer " + accessToken);
   }
 
-  const response = await fetch(API_BASE + path, {
-    ...options,
-    headers,
-    body,
-    credentials: "include",
-  });
+  const response = await fetch(API_BASE + path, buildInit(options, headers, body));
 
   if (response.status === 401 && !options.skipRefresh) {
     const refreshed = await tryRefresh();
@@ -117,11 +132,10 @@ export async function requestBlob(
     headers.set("Authorization", "Bearer " + accessToken);
   }
 
-  const response = await fetch(API_BASE + path, {
-    ...options,
-    headers,
-    credentials: "include",
-  });
+  const response = await fetch(
+    API_BASE + path,
+    buildInit(options, headers, options.rawBody),
+  );
 
   if (response.status === 401 && !options.skipRefresh) {
     const refreshed = await tryRefresh();

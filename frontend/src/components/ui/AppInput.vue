@@ -13,6 +13,10 @@ withDefaults(
   {
     type: "text",
     required: false,
+    placeholder: "",
+    autocomplete: "",
+    hint: "",
+    error: "",
   },
 );
 
