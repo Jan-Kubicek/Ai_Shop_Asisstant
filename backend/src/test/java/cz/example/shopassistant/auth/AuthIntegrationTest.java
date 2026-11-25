@@ -32,7 +32,7 @@ import cz.example.shopassistant.users.UsersApi;
             "app.auth.login-rate-limit.attempts=3",
             "app.auth.login-rate-limit.window-minutes=5"
         })
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 class AuthIntegrationTest {
 
     private static final String EMAIL = "admin@example.com";
