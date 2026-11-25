@@ -128,11 +128,16 @@ kontext sestaví i bez běžící databáze.
 Backend používá rozhraní `AiTextClient`. Ve výchozím nastavení běží
 `GeminiTextClient` s klíčem z `GEMINI_API_KEY` a modelem z `AI_MODEL_TEXT`.
 
-Pro vývoj bez spotřeby tokenů spusťte backend s profilem `fake-ai`:
+Poskytovatele textu vybírá `AI_PROVIDER_TEXT`:
+
+- `gemini` (výchozí) – `GEMINI_API_KEY`, model `AI_MODEL_TEXT`,
+- `openai` – `OPENAI_API_KEY`, model `OPENAI_MODEL` (výchozí `gpt-4.1-mini`),
+- `fake` – žádné API volání, fixní JSON.
+
+Pro vývoj bez spotřeby tokenů:
 
 ~~~bash
-java -jar target/shop-assistant-0.1.0-SNAPSHOT.jar \
-  --spring.profiles.active=dev,fake-ai
+AI_PROVIDER_TEXT=fake java -jar target/shop-assistant-0.1.0-SNAPSHOT.jar
 ~~~
 
 Výstup se validuje proti schématu v `schemas/product-text.schema.json`
@@ -165,11 +170,11 @@ Výsledek lze upravit přes `PATCH /api/v1/requests/{id}/result` a stáhnout
 celý balík přes `GET /api/v1/requests/{id}/download` (ZIP s texty, exportem
 a fotkou).
 
-E2E s mockovanou AI (vyžaduje backend s profilem `fake-ai`):
+E2E s mockovanou AI (vyžaduje `AI_PROVIDER_TEXT=fake`):
 
 ~~~bash
 cd backend
-java -jar target/shop-assistant-0.1.0-SNAPSHOT.jar --spring.profiles.active=dev,fake-ai
+AI_PROVIDER_TEXT=fake java -jar target/shop-assistant-0.1.0-SNAPSHOT.jar
 
 cd ../e2e
 E2E_USER_EMAIL=admin@example.com E2E_USER_PASSWORD=tajne-heslo npx playwright test

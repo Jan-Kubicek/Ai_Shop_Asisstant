@@ -42,6 +42,7 @@ public class OpenAiTextClient implements AiTextClient {
     private final double temperature;
     private final int maxTokens;
 
+    @org.springframework.beans.factory.annotation.Autowired
     public OpenAiTextClient(
             @Value("${app.ai.openai-api-key:}") String apiKey,
             @Value("${app.ai.openai-model:gpt-4.1-mini}") String model,
