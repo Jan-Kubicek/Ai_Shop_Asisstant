@@ -1,0 +1,10 @@
+# Výchozí vlastník celého repozitáře.
+# TODO: nahraďte @vlastnik-projektu skutečným GitHub uživatelem nebo týmem.
+*          @vlastnik-projektu
+
+/backend/   @vlastnik-projektu
+/frontend/  @vlastnik-projektu
+/e2e/       @vlastnik-projektu
+/.github/   @vlastnik-projektu
+/docs/      @vlastnik-projektu
+/infra/     @vlastnik-projektu
