@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import cz.example.shopassistant.auth.domain.UserPrincipal;
+import cz.example.shopassistant.common.security.AuthenticatedUser;
 import cz.example.shopassistant.requests.application.RequestsService;
 import cz.example.shopassistant.requests.application.RequestsService.RequestView;
 
@@ -57,7 +57,7 @@ public class RequestsController {
 
     private String currentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !(authentication.getPrincipal() instanceof UserPrincipal principal)) {
+        if (authentication == null || !(authentication.getPrincipal() instanceof AuthenticatedUser principal)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Je potřeba se přihlásit.");
         }
         return principal.id();

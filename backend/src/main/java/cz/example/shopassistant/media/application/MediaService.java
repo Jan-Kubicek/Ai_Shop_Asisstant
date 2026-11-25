@@ -68,7 +68,7 @@ public class MediaService implements MediaApi {
         byte[] stripped = stripMetadata(raw, format);
         String sha256 = sha256(stripped);
 
-        MediaFile existing = repository.findByOwnerIdAndSha256(ownerId, sha256).orElse(null);
+        cz.example.shopassistant.media.domain.MediaFile existing = repository.findByOwnerIdAndSha256(ownerId, sha256).orElse(null);
         if (existing != null) {
             return toApi(existing);
         }
@@ -83,7 +83,7 @@ public class MediaService implements MediaApi {
                     "Fotku se nepodařilo uložit.");
         }
 
-        MediaFile media = new MediaFile();
+        cz.example.shopassistant.media.domain.MediaFile media = new cz.example.shopassistant.media.domain.MediaFile();
         media.setOwnerId(ownerId);
         media.setFilename(filename);
         media.setContentType(contentType(format));
@@ -97,7 +97,7 @@ public class MediaService implements MediaApi {
 
     @Override
     public MediaApi.MediaFile getOwned(String mediaId, String ownerId) {
-        MediaFile media = repository.findById(mediaId)
+        cz.example.shopassistant.media.domain.MediaFile media = repository.findById(mediaId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Soubor neexistuje."));
         if (!media.getOwnerId().equals(ownerId)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Soubor neexistuje.");
@@ -107,8 +107,8 @@ public class MediaService implements MediaApi {
 
     @Override
     public byte[] readContent(String mediaId, String ownerId) {
-        MediaFile api = getOwned(mediaId, ownerId);
-        MediaFile entity = repository.findById(api.id()).orElseThrow();
+        MediaApi.MediaFile api = getOwned(mediaId, ownerId);
+        cz.example.shopassistant.media.domain.MediaFile entity = repository.findById(api.id()).orElseThrow();
         try {
             return Files.readAllBytes(Paths.get(entity.getStoragePath()));
         } catch (IOException exception) {
@@ -158,6 +158,15 @@ public class MediaService implements MediaApi {
             return output.toByteArray();
         } catch (IOException exception) {
             return raw;
+        }
+    }
+
+    private static String sha256(byte[] bytes) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            return HexFormat.of().formatHex(digest.digest(bytes));
+        } catch (NoSuchAlgorithmException exception) {
+            throw new IllegalStateException("SHA-256 není dostupné.", exception);
         }
     }
 

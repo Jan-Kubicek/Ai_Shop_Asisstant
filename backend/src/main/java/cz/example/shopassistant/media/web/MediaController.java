@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import cz.example.shopassistant.auth.domain.UserPrincipal;
+import cz.example.shopassistant.common.security.AuthenticatedUser;
 import cz.example.shopassistant.media.MediaApi;
 import cz.example.shopassistant.media.application.MediaService;
 
@@ -48,7 +48,7 @@ public class MediaController {
 
     private String currentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !(authentication.getPrincipal() instanceof UserPrincipal principal)) {
+        if (authentication == null || !(authentication.getPrincipal() instanceof AuthenticatedUser principal)) {
             throw new ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED,
                     "Je potřeba se přihlásit.");
         }
