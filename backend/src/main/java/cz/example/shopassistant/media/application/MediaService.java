@@ -1,5 +1,8 @@
 package cz.example.shopassistant.media.application;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -65,8 +68,8 @@ public class MediaService implements MediaApi {
                     "Podporované formáty jsou JPG, PNG a WebP.");
         }
 
-        byte[] stripped = stripMetadata(raw, format);
-        String sha256 = sha256(stripped);
+        byte[] processed = normalize(raw, format);
+        String sha256 = sha256(processed);
 
         cz.example.shopassistant.media.domain.MediaFile existing = repository.findByOwnerIdAndSha256(ownerId, sha256).orElse(null);
         if (existing != null) {
@@ -77,7 +80,7 @@ public class MediaService implements MediaApi {
         Path target = storageRoot.resolve(filename);
         try {
             Files.createDirectories(storageRoot);
-            Files.write(target, stripped);
+            Files.write(target, processed);
         } catch (IOException exception) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                     "Fotku se nepodařilo uložit.");
@@ -87,7 +90,7 @@ public class MediaService implements MediaApi {
         media.setOwnerId(ownerId);
         media.setFilename(filename);
         media.setContentType(contentType(format));
-        media.setSizeBytes(stripped.length);
+        media.setSizeBytes(processed.length);
         media.setSha256(sha256);
         media.setStoragePath(target.toString());
         media.setCreatedAt(Instant.now());
@@ -139,9 +142,15 @@ public class MediaService implements MediaApi {
         return null;
     }
 
-    private byte[] stripMetadata(byte[] raw, String format) {
+    /**
+     * Převede obrázek na čtverec 1000 × 1000 px. Delší strana se přizpůsobí
+     * 1000 px a zbývající plocha se doplní bílými pásy (u svislého obrázku
+     * vpravo a vlevo, u vodorovného nahoře a dole). Čtverec se jen převede.
+     * Rekódování zároveň odstraní EXIF metadata.
+     */
+    private byte[] normalize(byte[] raw, String format) {
         if ("webp".equals(format)) {
-            // WebP EXIF odstraníme v další fázi; zatím ukládáme originál.
+            // ImageIO v JDK neumí WebP – ponecháme originál beze změny.
             return raw;
         }
         try (ByteArrayInputStream input = new ByteArrayInputStream(raw);
@@ -150,8 +159,25 @@ public class MediaService implements MediaApi {
             if (image == null) {
                 return raw;
             }
+
+            int width = image.getWidth();
+            int height = image.getHeight();
+            double scale = 1000.0 / Math.max(width, height);
+            int scaledWidth = Math.max(1, (int) Math.round(width * scale));
+            int scaledHeight = Math.max(1, (int) Math.round(height * scale));
+
+            BufferedImage canvas = new BufferedImage(1000, 1000, BufferedImage.TYPE_INT_RGB);
+            Graphics2D graphics = canvas.createGraphics();
+            graphics.setColor(Color.WHITE);
+            graphics.fillRect(0, 0, 1000, 1000);
+            graphics.setRenderingHint(
+                    RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            graphics.drawImage(image, (1000 - scaledWidth) / 2, (1000 - scaledHeight) / 2,
+                    scaledWidth, scaledHeight, null);
+            graphics.dispose();
+
             String outFormat = "jpg".equals(format) ? "jpg" : "png";
-            boolean written = ImageIO.write(image, outFormat, output);
+            boolean written = ImageIO.write(canvas, outFormat, output);
             if (!written || output.size() == 0) {
                 return raw;
             }

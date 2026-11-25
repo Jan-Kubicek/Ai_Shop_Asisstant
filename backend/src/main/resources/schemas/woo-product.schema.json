@@ -60,6 +60,18 @@
             }
           }
         },
+        "variations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["size", "price"],
+            "properties": {
+              "size": { "type": "integer" },
+              "price": { "type": "number", "minimum": 0 }
+            }
+          }
+        },
         "meta_data": {
           "type": "array",
           "items": {

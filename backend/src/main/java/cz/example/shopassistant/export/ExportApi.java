@@ -25,7 +25,8 @@ public interface ExportApi {
 
     void updateResult(String requestId, String webTextJson, String socialTextJson);
 
-    String buildWooJson(String requestId, String webTextJson, String socialTextJson, String mediaId);
+    String buildWooJson(String requestId, String webTextJson, String socialTextJson, String mediaId,
+            java.util.List<cz.example.shopassistant.requests.RequestsApi.SizePrice> sizePrices);
 
     byte[] createZip(ResultData result, byte[] image);
 }

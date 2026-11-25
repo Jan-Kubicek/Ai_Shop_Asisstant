@@ -183,6 +183,28 @@ watch(
             <p class="muted">{{ request?.description }}</p>
           </AppCard>
 
+          <AppCard
+            v-if="request?.sizePrices && request.sizePrices.length > 0"
+            title="Velikosti a ceny"
+          >
+            <div data-testid="size-price-table" class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Velikost</th>
+                    <th>Cena (Kč)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="item in request.sizePrices" :key="item.size">
+                    <td>{{ item.size }}</td>
+                    <td>{{ item.price }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </AppCard>
+
           <template v-if="result?.webText && !editing">
             <AppCard title="Výsledky">
               <div data-testid="result-ready" class="stack">

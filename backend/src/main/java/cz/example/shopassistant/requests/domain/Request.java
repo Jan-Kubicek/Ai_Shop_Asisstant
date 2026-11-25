@@ -23,6 +23,8 @@ public class Request {
 
     private String mediaId;
 
+    private java.util.List<SizePrice> sizePrices;
+
     private Instant createdAt;
 
     private Instant finishedAt;
@@ -41,10 +43,22 @@ public class Request {
     public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
     public String getMediaId() { return mediaId; }
     public void setMediaId(String mediaId) { this.mediaId = mediaId; }
+    public java.util.List<SizePrice> getSizePrices() { return sizePrices; }
+    public void setSizePrices(java.util.List<SizePrice> sizePrices) { this.sizePrices = sizePrices; }
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
     public Instant getFinishedAt() { return finishedAt; }
     public void setFinishedAt(Instant finishedAt) { this.finishedAt = finishedAt; }
+
+    public static class SizePrice {
+        private int size;
+        private java.math.BigDecimal price;
+
+        public int getSize() { return size; }
+        public void setSize(int size) { this.size = size; }
+        public java.math.BigDecimal getPrice() { return price; }
+        public void setPrice(java.math.BigDecimal price) { this.price = price; }
+    }
 
     public static class RequestOptions {
         private boolean generateWebText;
@@ -53,7 +67,7 @@ public class Request {
         private String sizeFrom;
         private String sizeTo;
         private java.math.BigDecimal basePrice;
-        private java.math.BigDecimal priceIncrement;
+        private java.math.BigDecimal priceIncreasePercent;
 
         public String getSizeFrom() { return sizeFrom; }
         public void setSizeFrom(String sizeFrom) { this.sizeFrom = sizeFrom; }
@@ -61,8 +75,8 @@ public class Request {
         public void setSizeTo(String sizeTo) { this.sizeTo = sizeTo; }
         public java.math.BigDecimal getBasePrice() { return basePrice; }
         public void setBasePrice(java.math.BigDecimal basePrice) { this.basePrice = basePrice; }
-        public java.math.BigDecimal getPriceIncrement() { return priceIncrement; }
-        public void setPriceIncrement(java.math.BigDecimal priceIncrement) { this.priceIncrement = priceIncrement; }
+        public java.math.BigDecimal getPriceIncreasePercent() { return priceIncreasePercent; }
+        public void setPriceIncreasePercent(java.math.BigDecimal priceIncreasePercent) { this.priceIncreasePercent = priceIncreasePercent; }
 
         public boolean isGenerateWebText() { return generateWebText; }
         public void setGenerateWebText(boolean generateWebText) { this.generateWebText = generateWebText; }

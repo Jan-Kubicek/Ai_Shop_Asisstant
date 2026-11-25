@@ -9,6 +9,9 @@ import java.util.Optional;
  */
 public interface RequestsApi {
 
+    record SizePrice(int size, java.math.BigDecimal price) {
+    }
+
     record RequestView(
             String id,
             String userId,
@@ -17,6 +20,7 @@ public interface RequestsApi {
             String status,
             String errorMessage,
             String mediaId,
+            java.util.List<SizePrice> sizePrices,
             Instant createdAt,
             Instant finishedAt) {
     }

@@ -61,7 +61,8 @@ public class PipelineWorker {
                 JsonNode socialText = social.json();
                 String mediaId = request.mediaId() != null ? request.mediaId() : "";
                 String wooJson = exportApi.buildWooJson(
-                        request.id(), webText.toString(), socialText.toString(), mediaId);
+                        request.id(), webText.toString(), socialText.toString(), mediaId,
+                        request.sizePrices());
 
                 exportApi.saveResult(
                         request.id(),

@@ -37,7 +37,12 @@ export interface RequestOptions {
   sizeFrom?: string;
   sizeTo?: string;
   basePrice?: number;
-  priceIncrement?: number;
+  priceIncreasePercent?: number;
+}
+
+export interface SizePrice {
+  size: number;
+  price: number;
 }
 
 export interface ShopRequest {
@@ -48,6 +53,7 @@ export interface ShopRequest {
   errorMessage?: string;
   createdAt: string;
   finishedAt?: string;
+  sizePrices?: SizePrice[];
 }
 
 export interface ProductText {

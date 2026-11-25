@@ -22,7 +22,7 @@ const options = reactive<RequestOptions>({
   sizeFrom: "",
   sizeTo: "",
   basePrice: undefined,
-  priceIncrement: undefined,
+  priceIncreasePercent: undefined,
 });
 
 async function submit() {
@@ -131,23 +131,23 @@ async function submit() {
               />
             </div>
             <div class="form-field">
-              <label class="form-label" for="price-increment">
-                Příplatek za další velikost (Kč)
+              <label class="form-label" for="price-increase-percent">
+                Navýšení ceny o % (každou další velikost)
               </label>
               <input
-                id="price-increment"
-                v-model.number="options.priceIncrement"
+                id="price-increase-percent"
+                v-model.number="options.priceIncreasePercent"
                 class="app-input"
                 type="number"
                 min="0"
-                step="1"
-                placeholder="např. 30"
+                step="0.1"
+                placeholder="např. 5"
               />
             </div>
           </div>
           <span class="form-hint">
             Vyplňte samostatně počáteční a koncovou velikost, počáteční cenu
-            a zvýšení ceny pro každou další velikost.
+            a navýšení ceny v procentech pro každou další velikost (krok 6).
           </span>
         </AppCard>
 

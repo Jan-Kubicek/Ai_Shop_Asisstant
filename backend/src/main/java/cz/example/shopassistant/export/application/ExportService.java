@@ -66,7 +66,8 @@ public class ExportService implements ExportApi {
     }
 
     @Override
-    public String buildWooJson(String requestId, String webTextJson, String socialTextJson, String mediaId) {
+    public String buildWooJson(String requestId, String webTextJson, String socialTextJson, String mediaId,
+            java.util.List<cz.example.shopassistant.requests.RequestsApi.SizePrice> sizePrices) {
         try {
             JsonNode web = objectMapper.readTree(webTextJson);
             JsonNode social = objectMapper.readTree(socialTextJson);
@@ -96,6 +97,15 @@ public class ExportService implements ExportApi {
             for (JsonNode keyword : web.path("keywords")) {
                 ObjectNode tag = tags.addObject();
                 tag.put("name", keyword.asText());
+            }
+
+            ArrayNode variations = product.putArray("variations");
+            if (sizePrices != null) {
+                for (cz.example.shopassistant.requests.RequestsApi.SizePrice item : sizePrices) {
+                    ObjectNode variation = variations.addObject();
+                    variation.put("size", item.size());
+                    variation.put("price", item.price());
+                }
             }
 
             ObjectNode root = objectMapper.createObjectNode();

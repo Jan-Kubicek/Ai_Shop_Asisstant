@@ -47,10 +47,13 @@ public class RequestsService implements RequestsApi {
 
         MediaApi.MediaFile media = mediaApi.store(userId, photo);
 
+        Request.RequestOptions options = parseOptions(optionsJson);
+
         Request request = new Request();
         request.setUserId(userId);
         request.setDescription(description.trim());
-        request.setOptions(parseOptions(optionsJson));
+        request.setOptions(options);
+        request.setSizePrices(buildSizePrices(options));
         request.setStatus(RequestStatus.CREATED);
         request.setMediaId(media.id());
         request.setCreatedAt(Instant.now());
@@ -149,14 +152,66 @@ public class RequestsService implements RequestsApi {
                 request.getStatus().name(),
                 request.getErrorMessage(),
                 request.getMediaId(),
+                toApiSizePrices(request.getSizePrices()),
                 request.getCreatedAt(),
                 request.getFinishedAt());
     }
 
+    private static java.util.List<cz.example.shopassistant.requests.RequestsApi.SizePrice> toApiSizePrices(
+            java.util.List<Request.SizePrice> items) {
+        if (items == null) {
+            return java.util.List.of();
+        }
+        return items.stream()
+                .map(item -> new cz.example.shopassistant.requests.RequestsApi.SizePrice(
+                        item.getSize(), item.getPrice()))
+                .toList();
+    }
+
     private String optionsToJson(Request.RequestOptions options) {
-        return "{\"generateWebText\":" + options.isGenerateWebText()
-                + ",\"generateSocialPost\":" + options.isGenerateSocialPost()
-                + ",\"generateModelPhoto\":" + options.isGenerateModelPhoto() + "}";
+        try {
+            return objectMapper.writeValueAsString(options);
+        } catch (Exception exception) {
+            return "{}";
+        }
+    }
+
+    private static java.util.List<Request.SizePrice> buildSizePrices(Request.RequestOptions options) {
+        Integer from = parseSize(options.getSizeFrom());
+        Integer to = parseSize(options.getSizeTo());
+        java.math.BigDecimal base = options.getBasePrice();
+        java.math.BigDecimal percent = options.getPriceIncreasePercent();
+
+        if (from == null || to == null || base == null || percent == null || from > to) {
+            return java.util.List.of();
+        }
+
+        java.util.List<Request.SizePrice> result = new java.util.ArrayList<>();
+        java.math.BigDecimal multiplier = java.math.BigDecimal.ONE
+                .add(percent.divide(java.math.BigDecimal.valueOf(100), 4,
+                        java.math.RoundingMode.HALF_UP));
+        java.math.BigDecimal price = base;
+
+        for (int size = from; size <= to; size += 6) {
+            java.math.BigDecimal rounded = price.setScale(0, java.math.RoundingMode.HALF_UP);
+            Request.SizePrice item = new Request.SizePrice();
+            item.setSize(size);
+            item.setPrice(rounded);
+            result.add(item);
+            price = rounded.multiply(multiplier);
+        }
+        return result;
+    }
+
+    private static Integer parseSize(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        try {
+            return Integer.valueOf(value.trim());
+        } catch (NumberFormatException exception) {
+            return null;
+        }
     }
 
     private static Optional<java.math.BigDecimal> parsePrice(Object value) {
@@ -198,7 +253,7 @@ public class RequestsService implements RequestsApi {
                 options.setSizeTo(map.get("sizeTo").toString());
             }
             parsePrice(map.get("basePrice")).ifPresent(options::setBasePrice);
-            parsePrice(map.get("priceIncrement")).ifPresent(options::setPriceIncrement);
+            parsePrice(map.get("priceIncreasePercent")).ifPresent(options::setPriceIncreasePercent);
         } catch (Exception ignored) {
             // Neplatný JSON – použijeme výchozí volby.
         }
@@ -210,6 +265,7 @@ public class RequestsService implements RequestsApi {
                 request.getId(),
                 request.getDescription(),
                 request.getOptions() != null ? request.getOptions() : new Request.RequestOptions(),
+                toApiSizePrices(request.getSizePrices()),
                 request.getStatus().name(),
                 request.getErrorMessage(),
                 request.getCreatedAt() != null ? request.getCreatedAt().toString() : null,
@@ -220,6 +276,7 @@ public class RequestsService implements RequestsApi {
             String id,
             String description,
             Request.RequestOptions options,
+            java.util.List<cz.example.shopassistant.requests.RequestsApi.SizePrice> sizePrices,
             String status,
             String errorMessage,
             String createdAt,

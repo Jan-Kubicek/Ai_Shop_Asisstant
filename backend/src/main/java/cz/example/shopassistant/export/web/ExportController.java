@@ -69,7 +69,7 @@ public class ExportController {
         }
 
         String wooJson = exportApi.buildWooJson(id, webText, socialText,
-                request.mediaId() != null ? request.mediaId() : "");
+                request.mediaId() != null ? request.mediaId() : "", request.sizePrices());
         exportApi.saveResult(id, webText, socialText, wooJson, current.modelImageUrl());
 
         return toView(exportApi.findByRequestId(id).orElseThrow());
