@@ -34,6 +34,10 @@ export interface RequestOptions {
   generateWebText: boolean;
   generateSocialPost: boolean;
   generateModelPhoto: boolean;
+  sizeFrom?: string;
+  sizeTo?: string;
+  basePrice?: number;
+  priceIncrement?: number;
 }
 
 export interface ShopRequest {

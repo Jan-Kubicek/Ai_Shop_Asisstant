@@ -159,6 +159,17 @@ public class RequestsService implements RequestsApi {
                 + ",\"generateModelPhoto\":" + options.isGenerateModelPhoto() + "}";
     }
 
+    private static Optional<java.math.BigDecimal> parsePrice(Object value) {
+        if (value == null || value.toString().isBlank()) {
+            return Optional.empty();
+        }
+        try {
+            return Optional.of(new java.math.BigDecimal(value.toString()));
+        } catch (NumberFormatException exception) {
+            return Optional.empty();
+        }
+    }
+
     private Request.RequestOptions parseOptions(String optionsJson) {
         Request.RequestOptions options = new Request.RequestOptions();
         options.setGenerateWebText(true);
@@ -180,6 +191,14 @@ public class RequestsService implements RequestsApi {
             if (map.containsKey("generateModelPhoto")) {
                 options.setGenerateModelPhoto(Boolean.TRUE.equals(map.get("generateModelPhoto")));
             }
+            if (map.get("sizeFrom") != null) {
+                options.setSizeFrom(map.get("sizeFrom").toString());
+            }
+            if (map.get("sizeTo") != null) {
+                options.setSizeTo(map.get("sizeTo").toString());
+            }
+            parsePrice(map.get("basePrice")).ifPresent(options::setBasePrice);
+            parsePrice(map.get("priceIncrement")).ifPresent(options::setPriceIncrement);
         } catch (Exception ignored) {
             // Neplatný JSON – použijeme výchozí volby.
         }

@@ -19,6 +19,10 @@ const options = reactive<RequestOptions>({
   generateWebText: true,
   generateSocialPost: true,
   generateModelPhoto: false,
+  sizeFrom: "",
+  sizeTo: "",
+  basePrice: undefined,
+  priceIncrement: undefined,
 });
 
 async function submit() {
@@ -92,6 +96,59 @@ async function submit() {
               <span>Fotka produktu na modelovi (volitelné, může trvat déle)</span>
             </label>
           </div>
+        </AppCard>
+
+        <AppCard title="4. Velikosti a cena">
+          <div class="form-grid">
+            <div class="form-field">
+              <label class="form-label" for="size-from">Počáteční velikost</label>
+              <input
+                id="size-from"
+                v-model="options.sizeFrom"
+                class="app-input"
+                placeholder="např. XS"
+              />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="size-to">Koncová velikost</label>
+              <input
+                id="size-to"
+                v-model="options.sizeTo"
+                class="app-input"
+                placeholder="např. XXL"
+              />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="base-price">Počáteční cena (Kč)</label>
+              <input
+                id="base-price"
+                v-model.number="options.basePrice"
+                class="app-input"
+                type="number"
+                min="0"
+                step="1"
+                placeholder="např. 490"
+              />
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="price-increment">
+                Příplatek za další velikost (Kč)
+              </label>
+              <input
+                id="price-increment"
+                v-model.number="options.priceIncrement"
+                class="app-input"
+                type="number"
+                min="0"
+                step="1"
+                placeholder="např. 30"
+              />
+            </div>
+          </div>
+          <span class="form-hint">
+            Vyplňte samostatně počáteční a koncovou velikost, počáteční cenu
+            a zvýšení ceny pro každou další velikost.
+          </span>
         </AppCard>
 
         <p v-if="error" class="alert alert--error" role="alert">{{ error }}</p>

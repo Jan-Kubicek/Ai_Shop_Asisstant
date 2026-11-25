@@ -211,6 +211,12 @@
   margin-bottom: var(--space-4);
 }
 
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0 var(--space-4);
+}
+
 .form-label {
   font-size: var(--text-sm);
   font-weight: 600;

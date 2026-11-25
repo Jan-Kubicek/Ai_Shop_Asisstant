@@ -50,6 +50,19 @@ public class Request {
         private boolean generateWebText;
         private boolean generateSocialPost;
         private boolean generateModelPhoto;
+        private String sizeFrom;
+        private String sizeTo;
+        private java.math.BigDecimal basePrice;
+        private java.math.BigDecimal priceIncrement;
+
+        public String getSizeFrom() { return sizeFrom; }
+        public void setSizeFrom(String sizeFrom) { this.sizeFrom = sizeFrom; }
+        public String getSizeTo() { return sizeTo; }
+        public void setSizeTo(String sizeTo) { this.sizeTo = sizeTo; }
+        public java.math.BigDecimal getBasePrice() { return basePrice; }
+        public void setBasePrice(java.math.BigDecimal basePrice) { this.basePrice = basePrice; }
+        public java.math.BigDecimal getPriceIncrement() { return priceIncrement; }
+        public void setPriceIncrement(java.math.BigDecimal priceIncrement) { this.priceIncrement = priceIncrement; }
 
         public boolean isGenerateWebText() { return generateWebText; }
         public void setGenerateWebText(boolean generateWebText) { this.generateWebText = generateWebText; }
