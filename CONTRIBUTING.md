@@ -26,7 +26,9 @@ npm install
 npm run dev
 ~~~
 
-Podrobnosti najdete v [docs/deployment.md](docs/deployment.md).
+Podrobnosti a ověření celé kostry najdete v
+[docs/local-development.md](docs/local-development.md) a v
+[docs/deployment.md](docs/deployment.md).
 
 ## Větve
 
