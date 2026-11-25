@@ -25,7 +25,7 @@ test.describe("Nový požadavek", () => {
       mimeType: "image/png",
       buffer: Buffer.from(PNG_1X1, "base64"),
     });
-    await page.getByLabel("Popis produktu").fill("Testovací produkt pro E2E.");
+    await page.locator("#description").fill("Testovací produkt pro E2E.");
     await page.getByRole("button", { name: "Vytvořit" }).click();
 
     await expect(page).toHaveURL(/\/requests\/[a-f0-9]+/);

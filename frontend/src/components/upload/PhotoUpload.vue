@@ -25,12 +25,17 @@ async function onChange(event: Event) {
   }
 
   originalSize.value = selected.size;
-  file.value = await compress(selected);
+  const compressed = await compress(selected);
+  file.value = compressed;
 
   if (previewUrl.value) {
     URL.revokeObjectURL(previewUrl.value);
   }
-  previewUrl.value = URL.createObjectURL(file.value);
+  try {
+    previewUrl.value = URL.createObjectURL(compressed);
+  } catch {
+    previewUrl.value = null;
+  }
 }
 
 function openPicker() {
