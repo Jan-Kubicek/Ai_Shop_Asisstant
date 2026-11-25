@@ -157,6 +157,10 @@ Admin po kontrole schválí výsledek přes `POST /api/v1/requests/{id}/approve`
 – požadavek se přesune do `QUEUED_FOR_SHOP` a přidá se do fronty e-shopu.
 Odtud lze stáhnout WooCommerce JSON nebo označit položku jako importovanou.
 
+Stav požadavku lze sledovat přes SSE: `GET /api/v1/requests/{id}/events`
+vyžaduje Bearer token a posílá události `status` (CREATED → PROCESSING →
+REVIEW). Frontend preferuje SSE a pokud není dostupný, přepne se na polling.
+
 Výsledek lze upravit přes `PATCH /api/v1/requests/{id}/result` a stáhnout
 celý balík přes `GET /api/v1/requests/{id}/download` (ZIP s texty, exportem
 a fotkou).

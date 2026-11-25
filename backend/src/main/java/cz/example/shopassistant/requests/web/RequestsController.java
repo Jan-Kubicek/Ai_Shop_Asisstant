@@ -3,6 +3,7 @@ package cz.example.shopassistant.requests.web;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,9 +15,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import cz.example.shopassistant.common.security.AuthenticatedUser;
 import cz.example.shopassistant.requests.application.RequestsService;
+import cz.example.shopassistant.requests.infrastructure.RequestEventPublisher;
 import cz.example.shopassistant.requests.application.RequestsService.CreatedRequestView;
 
 @RestController
@@ -24,9 +27,11 @@ import cz.example.shopassistant.requests.application.RequestsService.CreatedRequ
 public class RequestsController {
 
     private final RequestsService service;
+    private final RequestEventPublisher eventPublisher;
 
-    public RequestsController(RequestsService service) {
+    public RequestsController(RequestsService service, RequestEventPublisher eventPublisher) {
         this.service = service;
+        this.eventPublisher = eventPublisher;
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -54,6 +59,18 @@ public class RequestsController {
     public CreatedRequestView get(@PathVariable String id) {
         String userId = currentUserId();
         return service.get(userId, id);
+    }
+
+    @GetMapping(value = "/{id}/events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter events(@PathVariable String id) {
+        CreatedRequestView current = service.get(currentUserId(), id);
+        return eventPublisher.subscribe(new cz.example.shopassistant.requests.RequestStatusChangedEvent(
+                current.id(),
+                current.status(),
+                current.errorMessage(),
+                current.description(),
+                current.createdAt(),
+                current.finishedAt()));
     }
 
     private String currentUserId() {

@@ -61,6 +61,11 @@ Odpověď <code>202 Accepted</code>:
 <code>GET /requests/{id}/events</code> posílá události <code>status</code> s JSON
 obsahujícím aktuální stav. Klient může použít i polling <code>GET /requests/{id}</code>.
 
+Stream vyžaduje <code>Authorization: Bearer</code> (proto frontend čte SSE přes
+<code>fetch</code> a ne přes <code>EventSource</code>). První událost je aktuální
+stav, další se odesílají při každé změně dokud požadavek nedosáhne koncového
+stavu.
+
 ## Admin
 
 | Metoda | Endpoint | Popis |

@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.example.shopassistant.media.MediaApi;
 import cz.example.shopassistant.requests.RequestsApi;
+import cz.example.shopassistant.requests.RequestStatusChangedEvent;
 import cz.example.shopassistant.requests.RequestsApi.RequestView;
 import cz.example.shopassistant.requests.domain.Request;
 import cz.example.shopassistant.requests.domain.RequestRepository;
@@ -28,11 +30,14 @@ public class RequestsService implements RequestsApi {
     private final RequestRepository repository;
     private final MediaApi mediaApi;
     private final ObjectMapper objectMapper;
+    private final ApplicationEventPublisher events;
 
-    public RequestsService(RequestRepository repository, MediaApi mediaApi, ObjectMapper objectMapper) {
+    public RequestsService(RequestRepository repository, MediaApi mediaApi, ObjectMapper objectMapper,
+            ApplicationEventPublisher events) {
         this.repository = repository;
         this.mediaApi = mediaApi;
         this.objectMapper = objectMapper;
+        this.events = events;
     }
 
     public CreatedRequestView create(String userId, MultipartFile photo, String description, String optionsJson) {
@@ -125,7 +130,14 @@ public class RequestsService implements RequestsApi {
         if (status == RequestStatus.QUEUED_FOR_SHOP || status == RequestStatus.FAILED) {
             request.setFinishedAt(Instant.now());
         }
-        repository.save(request);
+        Request saved = repository.save(request);
+        events.publishEvent(new RequestStatusChangedEvent(
+                saved.getId(),
+                saved.getStatus().name(),
+                saved.getErrorMessage(),
+                saved.getDescription(),
+                saved.getCreatedAt() != null ? saved.getCreatedAt().toString() : null,
+                saved.getFinishedAt() != null ? saved.getFinishedAt().toString() : null));
     }
 
     private RequestView toApiView(Request request) {
