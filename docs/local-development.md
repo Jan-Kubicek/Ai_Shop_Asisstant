@@ -123,6 +123,30 @@ Test <code>ModularityTests</code> hlídá hranice modulů Spring Modulith.
 Test <code>ShopAssistantApplicationTests</code> ověřuje, že se Spring
 kontext sestaví i bez běžící databáze.
 
+## 6. AI (Fáze 3)
+
+Backend používá rozhraní `AiTextClient`. Ve výchozím nastavení běží
+`GeminiTextClient` s klíčem z `GEMINI_API_KEY` a modelem z `AI_MODEL_TEXT`.
+
+Pro vývoj bez spotřeby tokenů spusťte backend s profilem `fake-ai`:
+
+~~~bash
+java -jar target/shop-assistant-0.1.0-SNAPSHOT.jar \
+  --spring.profiles.active=dev,fake-ai
+~~~
+
+Výstup se validuje proti schématu v `schemas/product-text.schema.json`
+a prochází sanitizací (odstranění markdown bloků, kontrola povinných polí).
+
+Ruční ověření kvality textů ve vývoji (endpoint není v produkci dostupný):
+
+~~~bash
+curl -X POST http://localhost:8080/api/v1/ai/product-text \
+  -H "Authorization: Bearer <access-token>" \
+  -H "Content-Type: application/json; charset=utf-8" \
+  -d '{"description":"Ručně pletená čepice z vlny","tone":"věcný"}'
+~~~
+
 ## Časté problémy
 
 - **Port 8080 nebo 5173 je obsazený** – ukončete předchozí proces nebo

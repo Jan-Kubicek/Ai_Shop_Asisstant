@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
@@ -18,6 +19,7 @@ import cz.example.shopassistant.ai.application.AiTextClient;
  * Klient pro Google Gemini (Generative Language API).
  */
 @Component
+@org.springframework.context.annotation.Profile("!fake-ai")
 public class GeminiTextClient implements AiTextClient {
 
     private final RestClient restClient;
@@ -30,7 +32,7 @@ public class GeminiTextClient implements AiTextClient {
     @org.springframework.beans.factory.annotation.Autowired
     public GeminiTextClient(
             @Value("${app.ai.gemini-api-key:}") String apiKey,
-            @Value("${app.ai.gemini-model:gemini-2.0-flash}") String model,
+            @Value("${app.ai.gemini-model:gemini-3.5-flash}") String model,
             @Value("${app.ai.timeout-seconds:60}") int timeoutSeconds,
             @Value("${app.ai.max-retries:3}") int maxRetries,
             @Value("${app.ai.temperature:0.7}") double temperature,
@@ -101,6 +103,9 @@ public class GeminiTextClient implements AiTextClient {
                     throw new AiException("Gemini vrátil prázdnou odpověď.");
                 }
                 return text;
+            } catch (HttpClientErrorException exception) {
+                // Chyba na straně klienta (např. špatný model nebo klíč) – retry nepomůže.
+                throw new AiException("Gemini odmítl požadavek: " + exception.getStatusCode(), exception);
             } catch (RestClientException | IllegalStateException exception) {
                 last = exception;
                 if (attempt < maxRetries) {
