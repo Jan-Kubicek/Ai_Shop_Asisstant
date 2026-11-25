@@ -28,7 +28,8 @@ services:
       context: ./backend
     restart: unless-stopped
     env_file:
-      - .env
+      - path: .env
+        required: false
     environment:
       SPRING_PROFILES_ACTIVE: prod
       MONGO_URI: mongodb://$MONGO_APP_USER:$MONGO_APP_PASSWORD@mongo:27017/shopassistant?authSource=shopassistant
