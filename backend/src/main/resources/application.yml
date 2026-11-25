@@ -57,8 +57,13 @@ app:
     text-provider: ${AI_PROVIDER_TEXT:gemini}
     image-provider: ${AI_PROVIDER_IMAGE:gemini}
     gemini-api-key: ${GEMINI_API_KEY:}
+    gemini-model: ${AI_MODEL_TEXT:gemini-2.0-flash}
+    gemini-base-url: ${AI_BASE_URL:https://generativelanguage.googleapis.com}
     openai-api-key: ${OPENAI_API_KEY:}
     timeout-seconds: ${AI_REQUEST_TIMEOUT_SECONDS:60}
+    max-retries: ${AI_MAX_RETRIES:3}
+    temperature: ${AI_TEMPERATURE:0.7}
+    max-tokens: ${AI_MAX_TOKENS:2048}
   limits:
     requests-per-day: ${LIMIT_REQUESTS_PER_DAY:20}
     model-photos-per-day: ${LIMIT_MODEL_PHOTOS_PER_DAY:3}
