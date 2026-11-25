@@ -1,6 +1,7 @@
 package cz.example.shopassistant.auth.web;
 
 import java.time.Duration;
+import java.util.Locale;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -20,7 +21,9 @@ import cz.example.shopassistant.auth.application.AuthService;
 import cz.example.shopassistant.auth.application.AuthService.AuthResult;
 import cz.example.shopassistant.auth.application.AuthService.UserView;
 import cz.example.shopassistant.auth.application.JwtService;
+import cz.example.shopassistant.auth.application.LoginRateLimiter;
 import cz.example.shopassistant.auth.domain.UserPrincipal;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
@@ -35,23 +38,32 @@ public class AuthController {
 
     private final AuthService authService;
     private final JwtService jwtService;
+    private final LoginRateLimiter rateLimiter;
     private final boolean cookieSecure;
 
     public AuthController(
             AuthService authService,
             JwtService jwtService,
+            LoginRateLimiter rateLimiter,
             @Value("${app.jwt.cookie-secure:false}") boolean cookieSecure) {
         this.authService = authService;
         this.jwtService = jwtService;
+        this.rateLimiter = rateLimiter;
         this.cookieSecure = cookieSecure;
     }
 
     @PostMapping("/login")
     public ResponseEntity<TokenResponse> login(
             @Valid @RequestBody LoginRequest request,
+            HttpServletRequest httpRequest,
             HttpServletResponse response) {
 
+        String key = rateLimitKey(httpRequest, request.email());
+        rateLimiter.check(key);
+
         AuthResult result = authService.login(request.email(), request.password());
+        rateLimiter.reset(key);
+
         addRefreshCookie(response, result.refreshToken(), jwtService.refreshTtl());
         return ResponseEntity.ok(TokenResponse.from(result));
     }
@@ -82,6 +94,10 @@ public class AuthController {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Nejste přihlášen.");
         }
         return authService.currentUser(principal.id());
+    }
+
+    private static String rateLimitKey(HttpServletRequest request, String email) {
+        return request.getRemoteAddr() + "|" + email.trim().toLowerCase(Locale.ROOT);
     }
 
     private void addRefreshCookie(HttpServletResponse response, String value, Duration maxAge) {

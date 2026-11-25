@@ -17,6 +17,9 @@ Základní cesta: <code>/api/v1</code>. Komunikace je JSON, výjimkou je upload
 | POST | <code>/auth/logout</code> | odhlášení |
 | GET | <code>/auth/me</code> | přihlášený uživatel |
 
+Přihlášení je omezeno rate limitorem: výchozí 10 pokusů za 5 minut z jedné
+IP adresy a e-mailu. Po překročení vrací <code>429 RATE_LIMITED</code>.
+
 ## Požadavky (role USER)
 
 | Metoda | Endpoint | Popis |

@@ -44,6 +44,10 @@ app:
   seed-admin:
     email: ${SEED_ADMIN_EMAIL:}
     password: ${SEED_ADMIN_PASSWORD:}
+  auth:
+    login-rate-limit:
+      attempts: ${LOGIN_RATE_LIMIT_ATTEMPTS:10}
+      window-minutes: ${LOGIN_RATE_LIMIT_WINDOW_MINUTES:5}
   storage:
     type: ${STORAGE_TYPE:local}
     local-path: ${STORAGE_LOCAL_PATH:./data/uploads}
