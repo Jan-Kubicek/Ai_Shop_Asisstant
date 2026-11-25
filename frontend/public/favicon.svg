@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="AI Shop Assistant">
+  <rect width="64" height="64" rx="14" fill="#2f6f4e"/>
+  <path d="M20 24h24l-2.5 24h-19L20 24z" fill="#f7f7f5"/>
+  <path d="M26 24a6 6 0 0 1 12 0" fill="none" stroke="#f7f7f5" stroke-width="3" stroke-linecap="round"/>
+  <path d="M43 14l1.6 4.4L49 20l-4.4 1.6L43 26l-1.6-4.4L37 20l4.4-1.6L43 14z" fill="#f2c94c"/>
+</svg>
