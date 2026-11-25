@@ -187,6 +187,19 @@ public class MediaService implements MediaApi {
         }
     }
 
+    @Override
+    public void delete(String mediaId, String ownerId) {
+        getOwned(mediaId, ownerId);
+        cz.example.shopassistant.media.domain.MediaFile entity = repository.findById(mediaId).orElseThrow();
+        try {
+            Path file = Paths.get(entity.getStoragePath());
+            Files.deleteIfExists(file);
+        } catch (IOException exception) {
+            // Soubor možná už neexistuje – záznam přesto odstraníme.
+        }
+        repository.delete(entity);
+    }
+
     private static String sha256(byte[] bytes) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");

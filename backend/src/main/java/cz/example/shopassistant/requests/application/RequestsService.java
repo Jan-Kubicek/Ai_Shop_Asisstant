@@ -125,6 +125,46 @@ public class RequestsService implements RequestsApi {
         return repository.countByStatus(RequestStatus.FAILED);
     }
 
+    @Override
+    public void delete(String id, String userId) {
+        Request request = repository.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Požadavek neexistuje."));
+        repository.delete(request);
+    }
+
+    @Override
+    public java.util.List<cz.example.shopassistant.requests.RequestsApi.DailyStat> dailyStats(int days) {
+        java.time.Instant since = java.time.LocalDate.now()
+                .minusDays(Math.max(days, 1) - 1L)
+                .atStartOfDay(java.time.ZoneId.systemDefault())
+                .toInstant();
+
+        java.util.Map<java.time.LocalDate, long[]> grouped = new java.util.LinkedHashMap<>();
+        for (Request request : repository.findByCreatedAtAfter(since)) {
+            if (request.getCreatedAt() == null) {
+                continue;
+            }
+            java.time.LocalDate day = request.getCreatedAt()
+                    .atZone(java.time.ZoneId.systemDefault()).toLocalDate();
+            long[] counts = grouped.computeIfAbsent(day, ignored -> new long[2]);
+            counts[0]++;
+            if (request.getStatus() == RequestStatus.FAILED) {
+                counts[1]++;
+            }
+        }
+
+        java.util.List<cz.example.shopassistant.requests.RequestsApi.DailyStat> result =
+                new java.util.ArrayList<>();
+        for (java.time.LocalDate day = since.atZone(java.time.ZoneId.systemDefault()).toLocalDate();
+                !day.isAfter(java.time.LocalDate.now());
+                day = day.plusDays(1)) {
+            long[] counts = grouped.getOrDefault(day, new long[2]);
+            result.add(new cz.example.shopassistant.requests.RequestsApi.DailyStat(
+                    day, counts[0], counts[1]));
+        }
+        return result;
+    }
+
     private void updateStatus(String id, RequestStatus status, String errorMessage) {
         Request request = repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Požadavek neexistuje."));

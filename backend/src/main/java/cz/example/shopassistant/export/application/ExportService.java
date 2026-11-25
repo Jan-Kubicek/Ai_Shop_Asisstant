@@ -141,6 +141,11 @@ public class ExportService implements ExportApi {
         }
     }
 
+    @Override
+    public void deleteByRequestId(String requestId) {
+        repository.findByRequestId(requestId).ifPresent(repository::delete);
+    }
+
     private static void addEntry(ZipOutputStream zip, String name, String content) throws Exception {
         zip.putNextEntry(new ZipEntry(name));
         zip.write(content.getBytes(StandardCharsets.UTF_8));

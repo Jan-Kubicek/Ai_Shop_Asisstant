@@ -27,13 +27,18 @@ class StatsServiceTest {
         when(requests.countFailed()).thenReturn(1L);
         when(users.countEnabled()).thenReturn(4L);
         when(pipeline.totalTokens()).thenReturn(1500L);
+        when(pipeline.totalPromptTokens()).thenReturn(1000L);
+        when(pipeline.totalCompletionTokens()).thenReturn(500L);
+        when(requests.dailyStats(7)).thenReturn(java.util.List.of());
+        when(pipeline.dailyTokens(7)).thenReturn(java.util.List.of());
 
-        StatsService.Stats stats = new StatsService(requests, users, pipeline).get();
+        StatsService.Stats stats = new StatsService(requests, users, pipeline, 0.30, 2.50).get();
 
         assertThat(stats.requestsTotal()).isEqualTo(12);
         assertThat(stats.requestsToday()).isEqualTo(3);
         assertThat(stats.failedTotal()).isEqualTo(1);
         assertThat(stats.aiTokensTotal()).isEqualTo(1500);
         assertThat(stats.activeUsers()).isEqualTo(4);
+        assertThat(stats.estimatedCostUsd()).isEqualTo(0.0016);
     }
 }

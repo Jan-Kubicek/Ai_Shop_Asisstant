@@ -19,5 +19,6 @@ public interface AuditApi {
 
     void record(String userId, String action, String ip, Map<String, Object> details);
 
-    org.springframework.data.domain.Page<AuditEventView> list(int page, int size);
+    org.springframework.data.domain.Page<AuditEventView> list(
+            int page, int size, String action, String account, boolean newestFirst);
 }

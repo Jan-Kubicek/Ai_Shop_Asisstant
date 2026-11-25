@@ -29,4 +29,6 @@ public interface ExportApi {
             java.util.List<cz.example.shopassistant.requests.RequestsApi.SizePrice> sizePrices);
 
     byte[] createZip(ResultData result, byte[] image);
+
+    void deleteByRequestId(String requestId);
 }

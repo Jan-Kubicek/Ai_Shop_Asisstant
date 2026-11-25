@@ -27,8 +27,11 @@ public class AdminAuditController {
     @GetMapping("/audit")
     public PageResponse<AuditEventView> list(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "50") int size) {
-        var result = auditApi.list(page, size);
+            @RequestParam(defaultValue = "50") int size,
+            @RequestParam(required = false) String action,
+            @RequestParam(required = false) String account,
+            @RequestParam(defaultValue = "true") boolean newestFirst) {
+        var result = auditApi.list(page, size, action, account, newestFirst);
         return new PageResponse<>(result.getContent(), result.getTotalElements(), page, size);
     }
 

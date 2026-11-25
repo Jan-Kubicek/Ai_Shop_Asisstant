@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -73,6 +74,17 @@ public class ExportController {
         exportApi.saveResult(id, webText, socialText, wooJson, current.modelImageUrl());
 
         return toView(exportApi.findByRequestId(id).orElseThrow());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable String id) {
+        RequestView request = ownedRequest(id);
+        if (request.mediaId() != null) {
+            mediaApi.delete(request.mediaId(), currentUserId());
+        }
+        exportApi.deleteByRequestId(id);
+        requestsApi.delete(id, currentUserId());
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}/download")

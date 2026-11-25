@@ -17,4 +17,6 @@ public interface MediaApi {
     byte[] readContent(String mediaId, String ownerId);
 
     String contentType(String mediaId, String ownerId);
+
+    void delete(String mediaId, String ownerId);
 }

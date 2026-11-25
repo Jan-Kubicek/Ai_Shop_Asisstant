@@ -67,6 +67,9 @@ app:
     max-retries: ${AI_MAX_RETRIES:3}
     temperature: ${AI_TEMPERATURE:0.7}
     max-tokens: ${AI_MAX_TOKENS:2048}
+    cost:
+      input-usd-per-million: ${AI_COST_INPUT_USD_PER_M:0.30}
+      output-usd-per-million: ${AI_COST_OUTPUT_USD_PER_M:2.50}
   limits:
     requests-per-day: ${LIMIT_REQUESTS_PER_DAY:20}
     model-photos-per-day: ${LIMIT_MODEL_PHOTOS_PER_DAY:3}

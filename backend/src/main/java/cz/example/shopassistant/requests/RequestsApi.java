@@ -12,6 +12,9 @@ public interface RequestsApi {
     record SizePrice(int size, java.math.BigDecimal price) {
     }
 
+    record DailyStat(java.time.LocalDate date, long requests, long failed) {
+    }
+
     record RequestView(
             String id,
             String userId,
@@ -42,4 +45,8 @@ public interface RequestsApi {
     long countCreatedSince(java.time.Instant since);
 
     long countFailed();
+
+    void delete(String id, String userId);
+
+    java.util.List<DailyStat> dailyStats(int days);
 }
