@@ -1,0 +1,5 @@
+# /etc/cron.d/mongo-backup
+# Každý den ve 3:00 záloha MongoDB, log do /var/log/mongo-backup.log.
+SHELL=/bin/sh
+PATH=/usr/local/bin:/usr/bin:/bin
+0 3 * * * root cd /opt/ai-shop-assistant && ./scripts/backup-mongo.sh >> /var/log/mongo-backup.log 2>&1
