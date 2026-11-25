@@ -10,11 +10,13 @@ import "./styles/components.css";
 async function bootstrap() {
   const app = createApp(App);
   app.use(createPinia());
-  app.use(router);
 
+  // Nejdřív obnovit přihlášení, teprve potom spustit router.
+  // Jinak guard vyhodnotí uživatele jako nepřihlášeného a přesměruje na login.
   const auth = useAuthStore();
   await auth.bootstrap();
 
+  app.use(router);
   await router.isReady();
   app.mount("#app");
 }
