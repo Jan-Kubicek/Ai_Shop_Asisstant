@@ -17,7 +17,7 @@ test.describe("Nový požadavek", () => {
   });
 
   test("uživatel odešle fotku a popis", async ({ page }) => {
-    await page.getByRole("link", { name: "Nový požadavek" }).click();
+    await page.getByTestId("new-request-link").click();
     await expect(page).toHaveURL(/\/requests\/new/);
 
     await page.getByTestId("photo-input").setInputFiles({

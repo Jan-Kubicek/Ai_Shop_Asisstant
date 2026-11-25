@@ -17,7 +17,7 @@ class ModularityTests {
 
     @Test
     void aplikaceMaOcekavaneModuly() {
-        assertThat(MODULES.stream().map(module -> module.getName()))
+        assertThat(MODULES.stream().map(module -> module.getIdentifier().toString()))
                 .contains("auth", "users", "requests", "media", "ai",
                         "pipeline", "export", "shopqueue", "audit", "common");
     }

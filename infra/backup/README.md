@@ -23,7 +23,7 @@ Výchozí retence je 14 dní. Změňte ji parametrem skriptu nebo v cronu.
 ## Obnova
 
 ~~~bash
-./scripts/restore-mongo.sh backups/mongo-20261125-030000.archive.gz
+bash scripts/restore-mongo.sh backups/mongo-20261125-030000.archive.gz
 ~~~
 
 Obnovu testujte na stagingu alespoň jednou za čtvrt roku.

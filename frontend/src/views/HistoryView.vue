@@ -17,9 +17,19 @@ onMounted(() => {
 
 <template>
   <AppLayout>
-    <PageContainer title="Historie" subtitle="Vaše požadavky a jejich výsledky.">
+    <PageContainer
+      title="Historie"
+      subtitle="Vaše požadavky a jejich výsledky."
+      data-testid="history-view"
+    >
       <template #actions>
-        <RouterLink to="/requests/new" class="app-button">Nový požadavek</RouterLink>
+        <RouterLink
+          to="/requests/new"
+          class="app-button"
+          data-testid="new-request-link"
+        >
+          Nový požadavek
+        </RouterLink>
       </template>
 
       <p v-if="error" class="alert alert--error">{{ error }}</p>
@@ -29,7 +39,7 @@ onMounted(() => {
         Zatím nemáte žádný požadavek. Začněte tlačítkem „Nový požadavek“.
       </div>
 
-      <div v-else data-testid="history-view" class="table-wrap">
+      <div v-else class="table-wrap">
         <table class="table">
           <thead>
             <tr>

@@ -83,7 +83,7 @@ docker image prune -f
 Před aktualizací vždy vytvořte zálohu:
 
 ~~~bash
-./scripts/backup-mongo.sh
+bash scripts/backup-mongo.sh
 ~~~
 
 ## Zálohy
@@ -97,7 +97,7 @@ Před aktualizací vždy vytvořte zálohu:
 Obnova:
 
 ~~~bash
-./scripts/restore-mongo.sh backups/mongo-20261125-030000.archive.gz
+bash scripts/restore-mongo.sh backups/mongo-20261125-030000.archive.gz
 ~~~
 
 ## Monitoring
