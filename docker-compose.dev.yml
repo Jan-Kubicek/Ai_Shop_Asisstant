@@ -14,12 +14,12 @@ services:
     ports:
       - "27017:27017"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: $MONGO_INITDB_ROOT_USERNAME
-      MONGO_INITDB_ROOT_PASSWORD: $MONGO_INITDB_ROOT_PASSWORD
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-root}
       MONGO_INITDB_DATABASE: shopassistant
       MONGO_DATABASE: shopassistant
-      MONGO_APP_USER: $MONGO_APP_USER
-      MONGO_APP_PASSWORD: $MONGO_APP_PASSWORD
+      MONGO_APP_USER: ${MONGO_APP_USER:-app}
+      MONGO_APP_PASSWORD: ${MONGO_APP_PASSWORD:-app}
     volumes:
       - ./data/mongo-dev:/data/db
       - ./infra/mongo/init:/docker-entrypoint-initdb.d:ro
@@ -37,7 +37,7 @@ services:
     ports:
       - "8081:8081"
     environment:
-      ME_CONFIG_MONGODB_URL: mongodb://$MONGO_INITDB_ROOT_USERNAME:$MONGO_INITDB_ROOT_PASSWORD@mongo:27017/
+      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_INITDB_ROOT_USERNAME:-root}:${MONGO_INITDB_ROOT_PASSWORD:-root}@mongo:27017/
       ME_CONFIG_BASICAUTH: "false"
     depends_on:
       mongo:
