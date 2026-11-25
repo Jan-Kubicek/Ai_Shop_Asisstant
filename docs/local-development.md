@@ -147,6 +147,30 @@ curl -X POST http://localhost:8080/api/v1/ai/product-text \
   -d '{"description":"Ručně pletená čepice z vlny","tone":"věcný"}'
 ~~~
 
+## 7. Pipeline, export a fronta (Fáze 4)
+
+Worker v modulu `pipeline` běží přes `@Scheduled` a zpracovává požadavky
+v pořadí `CREATED → PROCESSING → REVIEW`. Každý běh zapíše záznam
+do kolekce `ai_calls` (provider, latence, stav).
+
+Admin po kontrole schválí výsledek přes `POST /api/v1/requests/{id}/approve`
+– požadavek se přesune do `QUEUED_FOR_SHOP` a přidá se do fronty e-shopu.
+Odtud lze stáhnout WooCommerce JSON nebo označit položku jako importovanou.
+
+Výsledek lze upravit přes `PATCH /api/v1/requests/{id}/result` a stáhnout
+celý balík přes `GET /api/v1/requests/{id}/download` (ZIP s texty, exportem
+a fotkou).
+
+E2E s mockovanou AI (vyžaduje backend s profilem `fake-ai`):
+
+~~~bash
+cd backend
+java -jar target/shop-assistant-0.1.0-SNAPSHOT.jar --spring.profiles.active=dev,fake-ai
+
+cd ../e2e
+E2E_USER_EMAIL=admin@example.com E2E_USER_PASSWORD=tajne-heslo npx playwright test
+~~~
+
 ## Časté problémy
 
 - **Port 8080 nebo 5173 je obsazený** – ukončete předchozí proces nebo

@@ -23,6 +23,18 @@ public class FakeAiTextClient implements AiTextClient {
             }
             """;
 
+    private static final String SOCIAL_RESPONSE = """
+            {
+              "instagram": {
+                "caption": "Ručně pletená čepice z čisté vlny v szedé barvě. Teplá, pohodlná a vyrobená v Česku.",
+                "hashtags": ["#čepice", "#vlna", "#handmade", "#zima", "#českývýrobek"]
+              },
+              "facebook": {
+                "text": "Představujeme ručně pletenou čepici z čisté vlny. Univerzální velikost, česká výroba a teplo pro chladné dny."
+              }
+            }
+            """;
+
     private final String configuredResponse;
 
     public FakeAiTextClient(@Value("${app.ai.fake-response:}") String configuredResponse) {
@@ -33,6 +45,9 @@ public class FakeAiTextClient implements AiTextClient {
     public String generate(String prompt) {
         if (configuredResponse != null && !configuredResponse.isBlank()) {
             return configuredResponse;
+        }
+        if (prompt != null && prompt.contains("Instagram")) {
+            return SOCIAL_RESPONSE;
         }
         return FIXED_RESPONSE;
     }

@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { requestsApi } from "@/api/requests.api";
 import { useRequestStatus } from "@/composables/useRequestStatus";
+import { useAuthStore } from "@/stores/auth";
 import type { RequestResult } from "@/types";
 import { formatDateTime } from "@/utils/format";
 import AppLayout from "@/components/layout/AppLayout.vue";
@@ -15,12 +16,26 @@ import JsonViewer from "@/components/result/JsonViewer.vue";
 import TextResultCard from "@/components/result/TextResultCard.vue";
 
 const route = useRoute();
+const auth = useAuthStore();
 const id = computed(() => String(route.params.id));
 
-const { request, error, start } = useRequestStatus(id.value);
+const { request, error, start, reload } = useRequestStatus(id.value, 1500);
 const result = ref<RequestResult | null>(null);
 const resultError = ref<string | null>(null);
 const downloading = ref(false);
+const saving = ref(false);
+const approving = ref(false);
+const editing = ref(false);
+
+const form = reactive({
+  title: "",
+  shortDescription: "",
+  longDescription: "",
+  keywords: "",
+  instagramCaption: "",
+  hashtags: "",
+  facebookText: "",
+});
 
 const instagramText = computed(() => {
   const social = result.value?.socialText;
@@ -32,12 +47,70 @@ const instagramText = computed(() => {
 
 const facebookText = computed(() => result.value?.socialText?.facebook.text ?? "");
 
+function fillForm() {
+  if (!result.value) {
+    return;
+  }
+  const web = result.value.webText;
+  const social = result.value.socialText;
+  if (web) {
+    form.title = web.title;
+    form.shortDescription = web.shortDescription;
+    form.longDescription = web.longDescription;
+    form.keywords = web.keywords.join(", ");
+  }
+  if (social) {
+    form.instagramCaption = social.instagram.caption;
+    form.hashtags = social.instagram.hashtags.join(" ");
+    form.facebookText = social.facebook.text;
+  }
+}
+
 async function loadResult() {
   try {
     result.value = await requestsApi.result(id.value);
+    fillForm();
     resultError.value = null;
   } catch {
     resultError.value = "Výsledek ještě není k dispozici.";
+  }
+}
+
+async function save() {
+  saving.value = true;
+  try {
+    const webText = {
+      title: form.title,
+      shortDescription: form.shortDescription,
+      longDescription: form.longDescription,
+      keywords: form.keywords.split(",").map((item) => item.trim()).filter(Boolean),
+    };
+    const socialText = {
+      instagram: {
+        caption: form.instagramCaption,
+        hashtags: form.hashtags.split(/\s+/).map((item) => item.trim()).filter(Boolean),
+      },
+      facebook: { text: form.facebookText },
+    };
+    result.value = await requestsApi.updateResult(id.value, { webText, socialText });
+    editing.value = false;
+  } catch (cause) {
+    resultError.value = cause instanceof Error ? cause.message : "Úpravu se nepodařilo uložit.";
+  } finally {
+    saving.value = false;
+  }
+}
+
+async function approve() {
+  approving.value = true;
+  try {
+    await requestsApi.approve(id.value);
+    await reload();
+    await loadResult();
+  } catch (cause) {
+    resultError.value = cause instanceof Error ? cause.message : "Schválení se nepodařilo.";
+  } finally {
+    approving.value = false;
   }
 }
 
@@ -52,8 +125,7 @@ async function download() {
     link.click();
     URL.revokeObjectURL(url);
   } catch (cause) {
-    resultError.value =
-      cause instanceof Error ? cause.message : "Stažení se nepodařilo.";
+    resultError.value = cause instanceof Error ? cause.message : "Stažení se nepodařilo.";
   } finally {
     downloading.value = false;
   }
@@ -78,65 +150,103 @@ watch(
   <AppLayout>
     <PageContainer title="Detail požadavku" subtitle="Průběh a výsledky zpracování.">
       <template #actions>
-        <AppButton :loading="downloading" :disabled="!result" @click="download">
-          Stáhnout vše
-        </AppButton>
+        <div class="row">
+          <AppButton
+            data-testid="download-request"
+            :loading="downloading"
+            :disabled="!result"
+            @click="download"
+          >
+            Stáhnout vše
+          </AppButton>
+          <AppButton
+            v-if="auth.isAdmin && result && request?.status === 'REVIEW'"
+            data-testid="approve-request"
+            :loading="approving"
+            @click="approve"
+          >
+            Schválit
+          </AppButton>
+        </div>
       </template>
 
       <p v-if="error" class="alert alert--error">{{ error }}</p>
 
-      <div class="detail-grid">
+      <div data-testid="request-status-wrapper" class="detail-grid">
         <div class="stack">
           <AppCard title="Stav">
             <div class="row row--between">
-              <StatusBadge
-                v-if="request"
-                data-testid="request-status"
-                :status="request.status"
-              />
-              <span class="muted">
-                {{ request ? formatDateTime(request.createdAt) : "" }}
-              </span>
+              <StatusBadge v-if="request" data-testid="request-status" :status="request.status" />
+              <span class="muted">{{ request ? formatDateTime(request.createdAt) : "" }}</span>
             </div>
-
-            <p v-if="request?.errorMessage" class="alert alert--error">
-              {{ request.errorMessage }}
-            </p>
+            <p v-if="request?.errorMessage" class="alert alert--error">{{ request.errorMessage }}</p>
             <p class="muted">{{ request?.description }}</p>
           </AppCard>
 
-          <template v-if="result">
-            <TextResultCard
-              v-if="result.webText"
-              title="Popis pro web"
-              :text="result.webText.longDescription"
-            />
-            <TextResultCard
-              v-if="result.webText"
-              title="Krátký popis"
-              :text="result.webText.shortDescription"
-            />
-            <TextResultCard
-              v-if="result.socialText"
-              title="Instagram"
-              :text="instagramText"
-            />
-            <TextResultCard
-              v-if="result.socialText"
-              title="Facebook"
-              :text="facebookText"
-            />
+          <template v-if="result?.webText && !editing">
+            <AppCard title="Výsledky">
+              <div data-testid="result-ready" class="stack">
+                <TextResultCard title="Popis pro web" :text="result.webText.longDescription" />
+                <TextResultCard title="Krátký popis" :text="result.webText.shortDescription" />
+                <TextResultCard title="Instagram" :text="instagramText" />
+                <TextResultCard title="Facebook" :text="facebookText" />
+              </div>
+              <div class="row">
+                <AppButton data-testid="edit-result" variant="secondary" size="sm" @click="editing = true">
+                  Upravit výsledek
+                </AppButton>
+              </div>
+            </AppCard>
           </template>
+
+          <AppCard v-else-if="editing" title="Úprava výsledku">
+            <div class="stack">
+              <div class="form-field">
+                <label class="form-label" for="edit-title">Název</label>
+                <input id="edit-title" v-model="form.title" class="app-input" />
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="edit-short">Krátký popis</label>
+                <textarea id="edit-short" v-model="form.shortDescription" class="app-textarea" rows="3"></textarea>
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="edit-long">Dlouhý popis</label>
+                <textarea id="edit-long" v-model="form.longDescription" class="app-textarea" rows="6"></textarea>
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="edit-keywords">Klíčová slova (čárkou)</label>
+                <input id="edit-keywords" v-model="form.keywords" class="app-input" />
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="edit-instagram">Instagram</label>
+                <textarea id="edit-instagram" v-model="form.instagramCaption" class="app-textarea" rows="3"></textarea>
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="edit-hashtags">Hashtagy</label>
+                <input id="edit-hashtags" v-model="form.hashtags" class="app-input" />
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="edit-facebook">Facebook</label>
+                <textarea id="edit-facebook" v-model="form.facebookText" class="app-textarea" rows="3"></textarea>
+              </div>
+              <div class="row">
+                <AppButton data-testid="save-result" :loading="saving" @click="save">Uložit</AppButton>
+                <AppButton variant="secondary" @click="editing = false">Zrušit</AppButton>
+              </div>
+            </div>
+          </AppCard>
+
           <p v-else class="muted">{{ resultError }}</p>
+
+          <p v-if="resultError && result" class="alert alert--error">{{ resultError }}</p>
         </div>
 
         <div class="stack">
           <ImagePreview
             v-if="result?.modelImageUrl"
             :src="result.modelImageUrl"
-            alt="Fotka produktu na modelovi"
+            alt="Fotka produktu"
           />
-
           <AppCard v-if="result?.wooJson" title="JSON pro WordPress">
             <JsonViewer :value="result.wooJson" />
           </AppCard>

@@ -45,6 +45,10 @@ export const requestsApi = {
     });
   },
 
+  approve(id: string): Promise<void> {
+    return request<void>("/requests/" + id + "/approve", { method: "POST" });
+  },
+
   download(id: string): Promise<Blob> {
     return requestBlob("/requests/" + id + "/download");
   },

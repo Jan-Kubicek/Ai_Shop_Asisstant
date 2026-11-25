@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.cz/schemas/social-text.schema.json",
+  "title": "SocialText",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["instagram", "facebook"],
+  "properties": {
+    "instagram": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["caption", "hashtags"],
+      "properties": {
+        "caption": { "type": "string", "minLength": 10, "maxLength": 600 },
+        "hashtags": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 12,
+          "items": { "type": "string", "minLength": 2, "maxLength": 60 }
+        }
+      }
+    },
+    "facebook": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["text"],
+      "properties": {
+        "text": { "type": "string", "minLength": 10, "maxLength": 800 }
+      }
+    }
+  }
+}

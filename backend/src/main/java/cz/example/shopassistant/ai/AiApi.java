@@ -1,10 +1,13 @@
 package cz.example.shopassistant.ai;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 /**
  * Veřejné rozhraní modulu AI.
- *
- * <p>Ostatní moduly smí používat pouze toto rozhraní. Implementace,
- * repozitáře a interní DTO zůstávají skryté.</p>
  */
 public interface AiApi {
+
+    JsonNode generateProductText(String description, String tone);
+
+    JsonNode generateSocialText(String description, String tone);
 }

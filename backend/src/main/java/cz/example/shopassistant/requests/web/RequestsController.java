@@ -17,7 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import cz.example.shopassistant.common.security.AuthenticatedUser;
 import cz.example.shopassistant.requests.application.RequestsService;
-import cz.example.shopassistant.requests.application.RequestsService.RequestView;
+import cz.example.shopassistant.requests.application.RequestsService.CreatedRequestView;
 
 @RestController
 @RequestMapping("/api/v1/requests")
@@ -30,27 +30,28 @@ public class RequestsController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<RequestView> create(
+    public ResponseEntity<CreatedRequestView> create(
             @RequestParam("photo") MultipartFile photo,
             @RequestParam("description") String description,
             @RequestParam(value = "options", required = false) String options) {
 
         String userId = currentUserId();
-        RequestView view = service.create(userId, photo, description, options);
+        CreatedRequestView view = service.create(userId, photo, description, options);
         return ResponseEntity.status(HttpStatus.CREATED).body(view);
     }
 
     @GetMapping
-    public Page<RequestView> list(
+    public PageResponse<CreatedRequestView> list(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
 
         String userId = currentUserId();
-        return service.list(userId, page, size);
+        Page<CreatedRequestView> result = service.list(userId, page, size);
+        return new PageResponse<>(result.getContent(), result.getTotalElements(), page, size);
     }
 
     @GetMapping("/{id}")
-    public RequestView get(@PathVariable String id) {
+    public CreatedRequestView get(@PathVariable String id) {
         String userId = currentUserId();
         return service.get(userId, id);
     }
@@ -61,5 +62,8 @@ public class RequestsController {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Je potřeba se přihlásit.");
         }
         return principal.id();
+    }
+
+    public record PageResponse<T>(java.util.List<T> items, long total, int page, int size) {
     }
 }

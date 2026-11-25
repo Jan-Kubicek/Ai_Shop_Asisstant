@@ -1,10 +1,31 @@
 package cz.example.shopassistant.export;
 
+import java.time.Instant;
+
 /**
  * Veřejné rozhraní modulu Export.
- *
- * <p>Ostatní moduly smí používat pouze toto rozhraní. Implementace,
- * repozitáře a interní DTO zůstávají skryté.</p>
  */
 public interface ExportApi {
+
+    record ResultData(
+            String id,
+            String requestId,
+            String webTextJson,
+            String socialTextJson,
+            String wooJson,
+            String modelImageUrl,
+            Instant createdAt,
+            Instant updatedAt) {
+    }
+
+    void saveResult(String requestId, String webTextJson, String socialTextJson,
+            String wooJson, String modelImageUrl);
+
+    java.util.Optional<ResultData> findByRequestId(String requestId);
+
+    void updateResult(String requestId, String webTextJson, String socialTextJson);
+
+    String buildWooJson(String requestId, String webTextJson, String socialTextJson, String mediaId);
+
+    byte[] createZip(ResultData result, byte[] image);
 }
