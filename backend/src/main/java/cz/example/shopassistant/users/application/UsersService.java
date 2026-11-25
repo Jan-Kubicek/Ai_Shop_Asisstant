@@ -39,6 +39,11 @@ public class UsersService implements UsersApi {
     }
 
     @Override
+    public long countEnabled() {
+        return repository.countByEnabledTrue();
+    }
+
+    @Override
     public UserAccount create(String email, String passwordHash, String role, int dailyLimit) {
         User user = new User();
         user.setEmail(normalize(email));

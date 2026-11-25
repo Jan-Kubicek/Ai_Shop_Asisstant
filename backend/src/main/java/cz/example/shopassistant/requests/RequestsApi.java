@@ -32,4 +32,10 @@ public interface RequestsApi {
     void markFailed(String id, String message);
 
     void markQueuedForShop(String id);
+
+    long count();
+
+    long countCreatedSince(java.time.Instant since);
+
+    long countFailed();
 }

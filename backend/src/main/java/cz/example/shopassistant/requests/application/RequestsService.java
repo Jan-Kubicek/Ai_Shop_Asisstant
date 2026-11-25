@@ -102,6 +102,21 @@ public class RequestsService implements RequestsApi {
         updateStatus(id, RequestStatus.QUEUED_FOR_SHOP, null);
     }
 
+    @Override
+    public long count() {
+        return repository.count();
+    }
+
+    @Override
+    public long countCreatedSince(Instant since) {
+        return repository.countByCreatedAtAfter(since);
+    }
+
+    @Override
+    public long countFailed() {
+        return repository.countByStatus(RequestStatus.FAILED);
+    }
+
     private void updateStatus(String id, RequestStatus status, String errorMessage) {
         Request request = repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Požadavek neexistuje."));

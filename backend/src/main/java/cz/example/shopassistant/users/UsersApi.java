@@ -17,6 +17,8 @@ public interface UsersApi {
 
     long count();
 
+    long countEnabled();
+
     UserAccount create(String email, String passwordHash, String role, int dailyLimit);
 
     void recordLogin(String id);

@@ -19,6 +19,10 @@ public class AiCall {
 
     private long latencyMs;
 
+    private int promptTokens;
+
+    private int completionTokens;
+
     private String status;
 
     private Instant timestamp;
@@ -33,6 +37,10 @@ public class AiCall {
     public void setOperation(String operation) { this.operation = operation; }
     public long getLatencyMs() { return latencyMs; }
     public void setLatencyMs(long latencyMs) { this.latencyMs = latencyMs; }
+    public int getPromptTokens() { return promptTokens; }
+    public void setPromptTokens(int promptTokens) { this.promptTokens = promptTokens; }
+    public int getCompletionTokens() { return completionTokens; }
+    public void setCompletionTokens(int completionTokens) { this.completionTokens = completionTokens; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
     public Instant getTimestamp() { return timestamp; }

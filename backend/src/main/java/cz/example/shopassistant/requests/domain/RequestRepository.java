@@ -13,4 +13,8 @@ public interface RequestRepository extends MongoRepository<Request, String> {
     java.util.Optional<Request> findByIdAndUserId(String id, String userId);
 
     List<Request> findTop20ByStatusOrderByCreatedAtAsc(RequestStatus status);
+
+    long countByStatus(RequestStatus status);
+
+    long countByCreatedAtAfter(java.time.Instant since);
 }
