@@ -4,6 +4,9 @@ import java.time.Instant;
 import java.util.Locale;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import cz.example.shopassistant.users.UsersApi;
@@ -61,6 +64,48 @@ public class UsersService implements UsersApi {
             user.setLastLoginAt(Instant.now());
             repository.save(user);
         });
+    }
+
+    @Override
+    public Page<UserView> list(int page, int size) {
+        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100));
+        return repository.findAll(pageable).map(UsersService::toView);
+    }
+
+    @Override
+    public UserView createUser(String email, String passwordHash, String role, int dailyLimit) {
+        UserAccount account = create(email, passwordHash, role, dailyLimit);
+        return repository.findById(account.id())
+                .map(UsersService::toView)
+                .orElseThrow();
+    }
+
+    @Override
+    public UserView updateUser(String id, String role, Boolean enabled, Integer dailyLimit) {
+        User user = repository.findById(id)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Uživatel neexistuje."));
+        if (role != null && !role.isBlank()) {
+            user.setRole(UserRole.valueOf(role));
+        }
+        if (enabled != null) {
+            user.setEnabled(enabled);
+        }
+        if (dailyLimit != null) {
+            user.setDailyLimit(Math.max(dailyLimit, 1));
+        }
+        return toView(repository.save(user));
+    }
+
+    private static UserView toView(User user) {
+        return new UserView(
+                user.getId(),
+                user.getEmail(),
+                user.getRole().name(),
+                user.isEnabled(),
+                user.getDailyLimit(),
+                user.getCreatedAt(),
+                user.getLastLoginAt());
     }
 
     private static String normalize(String email) {

@@ -2,6 +2,7 @@ package cz.example.shopassistant.auth.web;
 
 import java.time.Duration;
 import java.util.Locale;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -16,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+
+import cz.example.shopassistant.audit.AuditApi;
 
 import cz.example.shopassistant.auth.application.AuthService;
 import cz.example.shopassistant.auth.application.AuthService.AuthResult;
@@ -39,16 +42,19 @@ public class AuthController {
     private final AuthService authService;
     private final JwtService jwtService;
     private final LoginRateLimiter rateLimiter;
+    private final AuditApi auditApi;
     private final boolean cookieSecure;
 
     public AuthController(
             AuthService authService,
             JwtService jwtService,
             LoginRateLimiter rateLimiter,
+            AuditApi auditApi,
             @Value("${app.jwt.cookie-secure:false}") boolean cookieSecure) {
         this.authService = authService;
         this.jwtService = jwtService;
         this.rateLimiter = rateLimiter;
+        this.auditApi = auditApi;
         this.cookieSecure = cookieSecure;
     }
 
@@ -61,8 +67,17 @@ public class AuthController {
         String key = rateLimitKey(httpRequest, request.email());
         rateLimiter.check(key);
 
-        AuthResult result = authService.login(request.email(), request.password());
+        AuthResult result;
+        try {
+            result = authService.login(request.email(), request.password());
+        } catch (ResponseStatusException exception) {
+            auditApi.record(null, "LOGIN_FAILED", httpRequest.getRemoteAddr(),
+                    Map.of("email", request.email()));
+            throw exception;
+        }
         rateLimiter.reset(key);
+        auditApi.record(result.user().id(), "LOGIN_SUCCESS", httpRequest.getRemoteAddr(),
+                Map.of("email", request.email()));
 
         addRefreshCookie(response, result.refreshToken(), jwtService.refreshTtl());
         return ResponseEntity.ok(TokenResponse.from(result));
