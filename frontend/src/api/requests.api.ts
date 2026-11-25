@@ -45,6 +45,10 @@ export const requestsApi = {
     });
   },
 
+  delete(id: string): Promise<void> {
+    return request<void>("/requests/" + id, { method: "DELETE" });
+  },
+
   approve(id: string): Promise<void> {
     return request<void>("/requests/" + id + "/approve", { method: "POST" });
   },

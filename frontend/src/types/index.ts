@@ -120,12 +120,26 @@ export interface AuditEvent {
   timestamp: string;
 }
 
+export interface DailyRequestStat {
+  date: string;
+  requests: number;
+  failed: number;
+}
+
+export interface DailyTokenStat {
+  date: string;
+  tokens: number;
+}
+
 export interface Stats {
   requestsTotal: number;
   requestsToday: number;
   failedTotal: number;
   aiTokensTotal: number;
   activeUsers: number;
+  estimatedCostUsd: number;
+  requestsDaily: DailyRequestStat[];
+  tokensDaily: DailyTokenStat[];
 }
 
 export interface CreateUserRequest {

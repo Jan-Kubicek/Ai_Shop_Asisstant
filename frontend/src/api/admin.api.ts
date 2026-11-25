@@ -42,8 +42,21 @@ export const adminApi = {
     return request<User>("/admin/users/" + id, { method: "PATCH", body });
   },
 
-  audit(page = 0, size = 50): Promise<Page<AuditEvent>> {
-    return request<Page<AuditEvent>>("/admin/audit?page=" + page + "&size=" + size);
+  audit(
+    page = 0,
+    size = 50,
+    action = "",
+    account = "",
+    newestFirst = true,
+  ): Promise<Page<AuditEvent>> {
+    const params = new URLSearchParams({
+      page: String(page),
+      size: String(size),
+      action,
+      account,
+      newestFirst: String(newestFirst),
+    });
+    return request<Page<AuditEvent>>("/admin/audit?" + params.toString());
   },
 
   stats(): Promise<Stats> {
