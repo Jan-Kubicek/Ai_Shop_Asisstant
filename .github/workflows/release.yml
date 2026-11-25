@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Nastavení Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Přihlášení do GHCR
         uses: docker/login-action@v3
@@ -30,7 +30,7 @@ jobs:
 
       - name: Metadata backendu
         id: meta-backend
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ghcr.io/${{ github.repository }}/backend
           tags: |
@@ -49,7 +49,7 @@ jobs:
 
       - name: Metadata frontendu
         id: meta-frontend
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ghcr.io/${{ github.repository }}/frontend
           tags: |
@@ -67,6 +67,6 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Vytvoření GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           generate_release_notes: true
