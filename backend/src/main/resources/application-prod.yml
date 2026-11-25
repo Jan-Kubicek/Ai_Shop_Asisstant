@@ -1,0 +1,19 @@
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+server:
+  forward-headers-strategy: framework
+
+logging:
+  level:
+    root: INFO
+    cz.example.shopassistant: INFO
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health

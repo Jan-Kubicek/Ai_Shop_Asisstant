@@ -1,0 +1,12 @@
+Profesionální produktová fotografie pro e-shop.
+
+Produkt: {{productDescription}}
+Styl: {{style}}
+Prostředí: čisté, přirozené světlo, neutrální pozadí.
+Model: dospělý člověk, přirozený postoj, produkt je jasně viditelný.
+Kompozice: produkt v popředí, ostrý, bez rušivých prvků.
+Výstup: realistická fotografie, bez textu, bez log, bez vodoznaků.
+
+Zachovej barvu, materiál a tvar produktu. Nepřidávej prvky,
+které na produktu nejsou. Fotografie má působit jako ilustrační
+snímek, ne jako přesná technická dokumentace.
