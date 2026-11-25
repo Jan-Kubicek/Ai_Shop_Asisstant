@@ -15,5 +15,12 @@ public interface AiTextClient {
      * @return vygenerovaný text (typicky JSON)
      * @throws AiException při chybě komunikace nebo neplatné odpovědi
      */
-    String generate(String prompt);
+    default String generate(String prompt) {
+        return generateDetailed(prompt).text();
+    }
+
+    /**
+     * Vygeneruje text a vrátí i údaje o spotřebě tokenů.
+     */
+    AiTextResult generateDetailed(String prompt);
 }

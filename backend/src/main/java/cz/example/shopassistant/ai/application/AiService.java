@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import cz.example.shopassistant.ai.AiApi;
+import cz.example.shopassistant.ai.AiApi.GeneratedText;
 
 /**
  * Orchestrace AI: připraví prompt, zavolá klienta a zvaliduje výstup
@@ -31,21 +32,24 @@ public class AiService implements AiApi {
     }
 
     @Override
-    public JsonNode generateProductText(String description, String tone) {
+    public GeneratedText generateProductTextDetailed(String description, String tone) {
         String prompt = promptLoader.render(PRODUCT_PROMPT, Map.of(
                 "userDescription", description,
                 "tone", tone));
-        String raw = client.generate(prompt);
-        return validator.validate(raw, PRODUCT_SCHEMA);
+        return generateAndValidate(prompt, PRODUCT_SCHEMA);
     }
 
     @Override
-    public JsonNode generateSocialText(String description, String tone) {
+    public GeneratedText generateSocialTextDetailed(String description, String tone) {
         String prompt = promptLoader.render(SOCIAL_PROMPT, Map.of(
                 "userDescription", description,
                 "tone", tone));
-        String raw = client.generate(prompt);
+        return generateAndValidate(prompt, SOCIAL_SCHEMA);
+    }
 
-        return validator.validate(raw, SOCIAL_SCHEMA);
+    private GeneratedText generateAndValidate(String prompt, String schema) {
+        AiTextResult result = client.generateDetailed(prompt);
+        JsonNode json = validator.validate(result.text(), schema);
+        return new GeneratedText(json, result.promptTokens(), result.completionTokens());
     }
 }

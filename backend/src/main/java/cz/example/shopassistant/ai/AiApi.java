@@ -7,7 +7,18 @@ import com.fasterxml.jackson.databind.JsonNode;
  */
 public interface AiApi {
 
-    JsonNode generateProductText(String description, String tone);
+    record GeneratedText(JsonNode json, int promptTokens, int completionTokens) {
+    }
 
-    JsonNode generateSocialText(String description, String tone);
+    GeneratedText generateProductTextDetailed(String description, String tone);
+
+    GeneratedText generateSocialTextDetailed(String description, String tone);
+
+    default JsonNode generateProductText(String description, String tone) {
+        return generateProductTextDetailed(description, tone).json();
+    }
+
+    default JsonNode generateSocialText(String description, String tone) {
+        return generateSocialTextDetailed(description, tone).json();
+    }
 }

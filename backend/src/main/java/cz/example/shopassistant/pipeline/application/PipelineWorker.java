@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import cz.example.shopassistant.ai.AiApi;
+import cz.example.shopassistant.ai.AiApi.GeneratedText;
 import cz.example.shopassistant.export.ExportApi;
 import cz.example.shopassistant.pipeline.domain.AiCall;
 import cz.example.shopassistant.pipeline.domain.AiCallRepository;
@@ -54,8 +55,10 @@ public class PipelineWorker {
             long started = System.currentTimeMillis();
             requestsApi.markProcessing(request.id());
             try {
-                JsonNode webText = aiApi.generateProductText(request.description(), TONE);
-                JsonNode socialText = aiApi.generateSocialText(request.description(), TONE);
+                GeneratedText web = aiApi.generateProductTextDetailed(request.description(), TONE);
+                GeneratedText social = aiApi.generateSocialTextDetailed(request.description(), TONE);
+                JsonNode webText = web.json();
+                JsonNode socialText = social.json();
                 String mediaId = request.mediaId() != null ? request.mediaId() : "";
                 String wooJson = exportApi.buildWooJson(
                         request.id(), webText.toString(), socialText.toString(), mediaId);
@@ -67,22 +70,27 @@ public class PipelineWorker {
                         wooJson,
                         "/api/v1/media/" + mediaId);
                 requestsApi.markReview(request.id());
-                recordCall(request.id(), "SUCCESS", started);
+                recordCall(request.id(), "SUCCESS", started,
+                        web.promptTokens() + social.promptTokens(),
+                        web.completionTokens() + social.completionTokens());
                 LOG.info("Požadavek {} zpracován → REVIEW", request.id());
             } catch (Exception exception) {
                 requestsApi.markFailed(request.id(), "Zpracování selhalo: " + exception.getMessage());
-                recordCall(request.id(), "FAILED", started);
+                recordCall(request.id(), "FAILED", started, 0, 0);
                 LOG.error("Zpracování požadavku {} selhalo", request.id(), exception);
             }
         }
     }
 
-    private void recordCall(String requestId, String status, long started) {
+    private void recordCall(String requestId, String status, long started,
+            int promptTokens, int completionTokens) {
         AiCall call = new AiCall();
         call.setRequestId(requestId);
         call.setProvider(provider);
         call.setOperation("product-text+social-text");
         call.setLatencyMs(System.currentTimeMillis() - started);
+        call.setPromptTokens(promptTokens);
+        call.setCompletionTokens(completionTokens);
         call.setStatus(status);
         call.setTimestamp(Instant.now());
         aiCallRepository.save(call);

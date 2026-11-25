@@ -8,12 +8,20 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
 import cz.example.shopassistant.ai.application.AiException;
 import cz.example.shopassistant.ai.application.AiTextClient;
+import cz.example.shopassistant.ai.application.AiTextResult;
 
 /**
  * Klient pro Google Gemini (Generative Language API).
@@ -21,6 +29,10 @@ import cz.example.shopassistant.ai.application.AiTextClient;
 @Component
 @org.springframework.context.annotation.Profile("!fake-ai")
 public class GeminiTextClient implements AiTextClient {
+
+    private static final Logger LOG = LoggerFactory.getLogger(GeminiTextClient.class);
+    private static final ObjectMapper MAPPER = new ObjectMapper()
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     private final RestClient restClient;
     private final String model;
@@ -74,7 +86,7 @@ public class GeminiTextClient implements AiTextClient {
     }
 
     @Override
-    public String generate(String prompt) {
+    public AiTextResult generateDetailed(String prompt) {
         if (apiKey == null || apiKey.isBlank()) {
             throw new AiException("Není nastaven GEMINI_API_KEY. Nastavte app.ai.gemini-api-key.");
         }
@@ -88,7 +100,9 @@ public class GeminiTextClient implements AiTextClient {
         Exception last = null;
         for (int attempt = 0; attempt <= maxRetries; attempt++) {
             try {
-                GeminiResponse response = restClient.post()
+                // Gemini občas vrací JSON s Content-Type application/octet-stream,
+                // proto načteme tělo jako String a parsing provedeme sami.
+                String rawBody = restClient.post()
                         .uri(uriBuilder -> uriBuilder
                                 .path("/v1beta/models/{model}:generateContent")
                                 .queryParam("key", apiKey)
@@ -96,13 +110,28 @@ public class GeminiTextClient implements AiTextClient {
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(body)
                         .retrieve()
-                        .body(GeminiResponse.class);
+                        .body(String.class);
+
+                if (rawBody == null || rawBody.isBlank()) {
+                    throw new AiException("Gemini vrátil prázdnou odpověď.");
+                }
+
+                GeminiResponse response;
+                try {
+                    response = MAPPER.readValue(rawBody, GeminiResponse.class);
+                } catch (JsonProcessingException exception) {
+                    LOG.debug("Neplatná odpověď Gemini: {}", exception.getMessage());
+                    throw new AiException("Odpověď Gemini není platný JSON.", exception);
+                }
 
                 String text = extractText(response);
                 if (text == null || text.isBlank()) {
                     throw new AiException("Gemini vrátil prázdnou odpověď.");
                 }
-                return text;
+                GeminiResponse.UsageMetadata usage = response.usageMetadata();
+                int promptTokens = usage != null ? usage.promptTokenCount() : 0;
+                int completionTokens = usage != null ? usage.candidatesTokenCount() : 0;
+                return new AiTextResult(text, promptTokens, completionTokens);
             } catch (HttpClientErrorException exception) {
                 // Chyba na straně klienta (např. špatný model nebo klíč) – retry nepomůže.
                 throw new AiException("Gemini odmítl požadavek: " + exception.getStatusCode(), exception);
@@ -136,7 +165,7 @@ public class GeminiTextClient implements AiTextClient {
         return candidate.content().parts().get(0).text();
     }
 
-    record GeminiResponse(List<Candidate> candidates) {
+    record GeminiResponse(List<Candidate> candidates, UsageMetadata usageMetadata) {
         record Candidate(Content content) {
         }
 
@@ -144,6 +173,9 @@ public class GeminiTextClient implements AiTextClient {
         }
 
         record Part(String text) {
+        }
+
+        record UsageMetadata(int promptTokenCount, int candidatesTokenCount) {
         }
     }
 }

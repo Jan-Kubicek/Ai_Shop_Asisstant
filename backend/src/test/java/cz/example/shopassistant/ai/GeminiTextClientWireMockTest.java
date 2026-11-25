@@ -38,13 +38,16 @@ class GeminiTextClientWireMockTest {
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
                         .withBody("""
-                                {"candidates":[{"content":{"parts":[{"text":"Hello world"}]}}]}
+                                {"candidates":[{"content":{"parts":[{"text":"Hello world"}]}}],
+                                 "usageMetadata":{"promptTokenCount":11,"candidatesTokenCount":7}}
                                 """)));
 
         GeminiTextClient client = new GeminiTextClient(
                 wireMock.baseUrl(), "test-key", "gemini-test", 5, 1, 0.7, 100);
 
-        assertThat(client.generate("prompt")).isEqualTo("Hello world");
+        assertThat(client.generateDetailed("prompt").text()).isEqualTo("Hello world");
+        assertThat(client.generateDetailed("prompt").promptTokens()).isEqualTo(11);
+        assertThat(client.generateDetailed("prompt").completionTokens()).isEqualTo(7);
     }
 
     @Test

@@ -4,8 +4,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
-import cz.example.shopassistant.ai.application.AiException;
 import cz.example.shopassistant.ai.application.AiTextClient;
+import cz.example.shopassistant.ai.application.AiTextResult;
 
 /**
  * Falešná implementace pro vývoj a testy. Vrací pevný JSON bez volání API.
@@ -42,13 +42,15 @@ public class FakeAiTextClient implements AiTextClient {
     }
 
     @Override
-    public String generate(String prompt) {
+    public AiTextResult generateDetailed(String prompt) {
+        String text;
         if (configuredResponse != null && !configuredResponse.isBlank()) {
-            return configuredResponse;
+            text = configuredResponse;
+        } else if (prompt != null && prompt.contains("Instagram")) {
+            text = SOCIAL_RESPONSE;
+        } else {
+            text = FIXED_RESPONSE;
         }
-        if (prompt != null && prompt.contains("Instagram")) {
-            return SOCIAL_RESPONSE;
-        }
-        return FIXED_RESPONSE;
+        return new AiTextResult(text, 0, 0);
     }
 }
