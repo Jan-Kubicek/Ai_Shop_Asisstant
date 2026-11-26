@@ -12,7 +12,7 @@ napříč mnoha tabulkami.
 
 ## Rozhodnutí
 
-Použijeme **MongoDB 7** se Spring Data MongoDB. Fotky se ukládají mimo databázi,
+Použijeme **MongoDB 4.4** se Spring Data MongoDB. Fotky se ukládají mimo databázi,
 v dokumentech je pouze odkaz. Indexy vytváří inicializační skript.
 
 ## Důsledky

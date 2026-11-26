@@ -39,7 +39,7 @@ class AuthIntegrationTest {
     private static final String PASSWORD = "Sup3rSecret!";
 
     @Container
-    static final MongoDBContainer MONGO = new MongoDBContainer("mongo:7");
+    static final MongoDBContainer MONGO = new MongoDBContainer("mongo:4.4");
 
     @DynamicPropertySource
     static void mongoProperties(DynamicPropertyRegistry registry) {
