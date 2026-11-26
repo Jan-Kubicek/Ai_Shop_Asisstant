@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { reactive, ref } from "vue";
+import { reactive, ref, watch } from "vue";
+import { onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { requestsApi } from "@/api/requests.api";
 import type { RequestOptions } from "@/types";
@@ -14,8 +15,11 @@ const photo = ref<File | null>(null);
 const description = ref("");
 const submitting = ref(false);
 const error = ref<string | null>(null);
+const draftRestored = ref(false);
 
-const options = reactive<RequestOptions>({
+const DRAFT_KEY = "new-request-draft";
+
+const defaultOptions: RequestOptions = {
   generateWebText: true,
   generateSocialPost: true,
   generateModelPhoto: false,
@@ -24,7 +28,49 @@ const options = reactive<RequestOptions>({
   sizeTo: "",
   basePrice: undefined,
   priceIncreasePercent: undefined,
+};
+
+const options = reactive<RequestOptions>({ ...defaultOptions });
+
+function saveDraft() {
+  try {
+    localStorage.setItem(
+      DRAFT_KEY,
+      JSON.stringify({ description: description.value, options })
+    );
+  } catch {
+    // ignore
+  }
+}
+
+function restoreDraft() {
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return false;
+    const parsed = JSON.parse(raw) as { description?: string; options?: Partial<RequestOptions> };
+    if (parsed.description) description.value = parsed.description;
+    if (parsed.options) Object.assign(options, defaultOptions, parsed.options);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function clearDraft() {
+  try {
+    localStorage.removeItem(DRAFT_KEY);
+  } catch {
+    // ignore
+  }
+}
+
+onMounted(() => {
+  if (restoreDraft()) {
+    draftRestored.value = true;
+  }
 });
+
+watch([description, options], saveDraft, { deep: true });
 
 async function submit() {
   error.value = null;
@@ -45,6 +91,7 @@ async function submit() {
       description: description.value.trim(),
       options,
     });
+    clearDraft();
     await router.push("/requests/" + created.id);
   } catch (cause) {
     error.value =
@@ -52,6 +99,13 @@ async function submit() {
   } finally {
     submitting.value = false;
   }
+}
+
+function discardDraft() {
+  description.value = "";
+  Object.assign(options, defaultOptions);
+  clearDraft();
+  draftRestored.value = false;
 }
 </script>
 
@@ -61,6 +115,10 @@ async function submit() {
       title="Nový požadavek"
       subtitle="Nahrajte fotku, napište pár slov a vyberte, co chcete vytvořit."
     >
+      <p v-if="draftRestored" class="alert alert--info" role="status">
+        Obnovili jsme rozpracovaný požadavek (text a volby). Fotku je potřeba vybrat znovu.
+        <button type="button" class="link-button" @click="discardDraft">Zahodit</button>
+      </p>
       <form class="stack" data-testid="new-request-form" @submit.prevent="submit">
         <AppCard title="1. Fotka produktu">
           <PhotoUpload v-model="photo" />
