@@ -85,8 +85,7 @@ public class PipelineWorker {
                 if (wantsModelPhoto(request)) {
                     String modelDescription = option(request, "modelDescription");
                     imageApi.validateModelDescription(modelDescription);
-                    String prompt = "Vytvoř marketingovou fotku produktu. "
-                            + "Popis modelu: " + modelDescription;
+                    String prompt = imageApi.modelPrompt(request.description(), modelDescription);
                     GeneratedImage image = imageApi.generate(prompt);
                     cz.example.shopassistant.media.MediaApi.MediaFile stored = mediaApi.storeBytes(
                             request.userId(), image.image(), image.description() + ".png",

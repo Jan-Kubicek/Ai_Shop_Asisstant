@@ -111,7 +111,7 @@ public class PipelineController {
                 String description = option(request, "modelDescription");
                 imageApi.validateModelDescription(description);
                 GeneratedImage image = imageApi.generate(
-                        "Marketingová fotka produktu. Popis modelu: " + description);
+                        imageApi.modelPrompt(request.description(), description));
                 MediaApi.MediaFile stored = mediaApi.storeBytes(
                         request.userId(), image.image(), image.description() + ".png",
                         image.contentType());

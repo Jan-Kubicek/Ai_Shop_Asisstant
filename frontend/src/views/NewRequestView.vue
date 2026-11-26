@@ -90,7 +90,7 @@ async function submit() {
               v-model="options.modelDescription"
               class="app-textarea"
               data-testid="model-description"
-              placeholder="Např. dítě v věku 4 let v šedé čepici a teplé bundě, neutrální pozadí."
+              placeholder="Např. dívka 5 let, šedá čepice z popisu produktu, zimní bunda, neutrální studiové pozadí, fotografie."
               rows="3"
             ></textarea>
             <span class="form-hint">

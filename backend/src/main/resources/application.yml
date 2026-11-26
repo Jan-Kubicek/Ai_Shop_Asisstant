@@ -67,7 +67,6 @@ app:
     openai-base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
     openai-image-model: ${OPENAI_IMAGE_MODEL:gpt-image-1.5}
     gemini-image-model: ${AI_GEMINI_IMAGE_MODEL:gemini-2.5-flash-image}
-    pollinations-base-url: ${POLLINATIONS_BASE_URL:https://image.pollinations.ai}
     timeout-seconds: ${AI_REQUEST_TIMEOUT_SECONDS:60}
     max-retries: ${AI_MAX_RETRIES:3}
     rate-limit:

@@ -143,10 +143,10 @@ Pozor na kvóty: image modely Gemini mají na free tier limit **0** (vrátí 429
 `RESOURCE_EXHAUSTED`) a OpenAI Images vyžaduje kredit (jinak 429
 `insufficient_quota`).
 
-Jako skutečně free alternativa bez klíče je `pollinations` (veřejné API
-Pollinations.ai, `POLLINATIONS_BASE_URL`). Funguje, ale nejde o SLA službu
-a u dětského oblečení je nutné spoléhat na safety prefix v promptu – pro
-produkci raději placený provider. Jinak používejte `fake`.
+
+Veřejné bezklíčové image služby (např. Pollinations.ai) byly **odstraněny**:
+při testu ignorovaly safety pokyny a vygenerovaly nepřijatelné zobrazení dětí.
+Pro modelové fotky používejte pouze `fake` nebo placený provider s billingem.
 
 Pro vývoj bez spotřeby tokenů:
 
