@@ -60,13 +60,16 @@ services:
       - internal
     expose:
       - "80"
+    ports:
+      # Přímý přístup na FE na hostu. Lze změnit na 8085, nebo omezit na 127.0.0.1:5173.
+      - "${FRONTEND_PORT:-5173}:80"
 
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
+      - "${CADDY_HTTP_PORT:-80}:80"
+      - "${CADDY_HTTPS_PORT:-443}:443"
     environment:
       APP_DOMAIN: $APP_DOMAIN
       ACME_EMAIL: $ACME_EMAIL
