@@ -18,6 +18,14 @@ public interface MediaApi {
 
     String contentType(String mediaId, String ownerId);
 
+    /**
+     * Čtení souboru bez kontroly vlastníka. Používají pouze administrátorské
+     * endpointy, kde ownership ověřuje controller nad požadavkem.
+     */
+    byte[] readContentAny(String mediaId);
+
+    String contentTypeAny(String mediaId);
+
     void delete(String mediaId, String ownerId);
 
     MediaFile storeBytes(String ownerId, byte[] content, String filename, String contentType);

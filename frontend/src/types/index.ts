@@ -48,6 +48,7 @@ export interface SizePrice {
 
 export interface ShopRequest {
   id: string;
+  userId?: string;
   description: string;
   options: RequestOptions;
   status: RequestStatus;

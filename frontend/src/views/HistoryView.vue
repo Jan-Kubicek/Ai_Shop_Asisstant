@@ -2,6 +2,7 @@
 import { onMounted, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { useRequestsStore } from "@/stores/requests";
+import { useAuthStore } from "@/stores/auth";
 import { requestsApi } from "@/api/requests.api";
 import { formatDateTime } from "@/utils/format";
 import AppLayout from "@/components/layout/AppLayout.vue";
@@ -9,6 +10,7 @@ import PageContainer from "@/components/layout/PageContainer.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
 
 const store = useRequestsStore();
+const auth = useAuthStore();
 const { items, loading, error } = storeToRefs(store);
 const actionError = ref<string | null>(null);
 const selected = ref<Set<string>>(new Set());
@@ -99,7 +101,7 @@ onMounted(() => {
   <AppLayout>
     <PageContainer
       title="Historie"
-      subtitle="Vaše požadavky a jejich výsledky."
+      :subtitle="auth.isAdmin ? 'Všechny požadavky a jejich výsledky.' : 'Vaše požadavky a jejich výsledky.'"
       data-testid="history-view"
     >
       <template #actions>
@@ -144,6 +146,7 @@ onMounted(() => {
             <tr>
               <th></th>
               <th>Vytvořeno</th>
+              <th v-if="auth.isAdmin">Uživatel</th>
               <th>Popis</th>
               <th>Stav</th>
               <th></th>
@@ -159,6 +162,7 @@ onMounted(() => {
                 />
               </td>
               <td>{{ formatDateTime(item.createdAt) }}</td>
+              <td v-if="auth.isAdmin">{{ item.userId ?? "–" }}</td>
               <td>{{ item.description }}</td>
               <td><StatusBadge :status="item.status" /></td>
               <td>

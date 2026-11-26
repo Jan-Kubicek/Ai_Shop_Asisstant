@@ -81,11 +81,14 @@ public class ExportController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable String id) {
         RequestView request = ownedRequest(id);
+        // Vlastník požadavku je zároveň vlastníkem médií. Pro admina to umožňuje
+        // smazat i cizí požadavek (vlastnictví už ověřila ownedRequest).
+        String ownerId = request.userId();
         if (request.mediaId() != null) {
-            mediaApi.delete(request.mediaId(), currentUserId());
+            mediaApi.delete(request.mediaId(), ownerId);
         }
         exportApi.deleteByRequestId(id);
-        requestsApi.delete(id, currentUserId());
+        requestsApi.delete(id, ownerId);
         return ResponseEntity.noContent().build();
     }
 
@@ -96,7 +99,7 @@ public class ExportController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Výsledek neexistuje."));
 
         byte[] image = request.mediaId() != null
-                ? mediaApi.readContent(request.mediaId(), currentUserId())
+                ? mediaApi.readContent(request.mediaId(), request.userId())
                 : new byte[0];
 
         return ResponseEntity.ok()

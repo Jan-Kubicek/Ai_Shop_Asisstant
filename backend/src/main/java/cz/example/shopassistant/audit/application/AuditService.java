@@ -2,6 +2,7 @@ package cz.example.shopassistant.audit.application;
 
 import java.time.Instant;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -43,13 +44,16 @@ public class AuditService implements AuditApi {
     public Page<AuditEventView> list(int page, int size, String action, String account,
             boolean newestFirst) {
         Query query = new Query();
+        // Pattern.quote zabrání chybě 500 při zadání regex metaznaku (např. "[")
+        // a zároveň zamezí regex injekci z uživatelského vstupu.
         if (action != null && !action.isBlank()) {
-            query.addCriteria(Criteria.where("action").regex(action, "i"));
+            query.addCriteria(Criteria.where("action").regex(Pattern.quote(action.trim()), "i"));
         }
         if (account != null && !account.isBlank()) {
+            String value = Pattern.quote(account.trim());
             query.addCriteria(new Criteria().orOperator(
-                    Criteria.where("userId").regex(account, "i"),
-                    Criteria.where("details.email").regex(account, "i")));
+                    Criteria.where("userId").regex(value, "i"),
+                    Criteria.where("details.email").regex(value, "i")));
         }
 
         Pageable pageable = PageRequest.of(

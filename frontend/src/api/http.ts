@@ -145,6 +145,8 @@ export async function requestBlob(
     if (refreshed) {
       return requestBlob(path, { ...options, skipRefresh: true });
     }
+    // Stejně jako u request(): starý token dál neposílat.
+    accessToken = null;
   }
 
   if (!response.ok) {

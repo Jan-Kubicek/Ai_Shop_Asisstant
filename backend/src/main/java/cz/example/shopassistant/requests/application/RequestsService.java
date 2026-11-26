@@ -373,6 +373,7 @@ public class RequestsService implements RequestsApi {
     private CreatedRequestView toView(Request request) {
         return new CreatedRequestView(
                 request.getId(),
+                request.getUserId(),
                 request.getDescription(),
                 request.getOptions() != null ? request.getOptions() : new Request.RequestOptions(),
                 request.getMediaId(),
@@ -386,6 +387,7 @@ public class RequestsService implements RequestsApi {
 
     public record CreatedRequestView(
             String id,
+            String userId,
             String description,
             Request.RequestOptions options,
             String mediaId,

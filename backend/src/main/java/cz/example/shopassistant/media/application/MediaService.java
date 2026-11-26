@@ -148,18 +148,35 @@ public class MediaService implements MediaApi {
 
     @Override
     public byte[] readContent(String mediaId, String ownerId) {
-        MediaApi.MediaFile api = getOwned(mediaId, ownerId);
-        cz.example.shopassistant.media.domain.MediaFile entity = repository.findById(api.id()).orElseThrow();
-        try {
-            return Files.readAllBytes(Paths.get(entity.getStoragePath()));
-        } catch (IOException exception) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Soubor se nepodařilo načíst.");
-        }
+        return readBytes(findEntity(getOwned(mediaId, ownerId).id()));
     }
 
     @Override
     public String contentType(String mediaId, String ownerId) {
         return getOwned(mediaId, ownerId).contentType();
+    }
+
+    @Override
+    public byte[] readContentAny(String mediaId) {
+        return readBytes(findEntity(mediaId));
+    }
+
+    @Override
+    public String contentTypeAny(String mediaId) {
+        return findEntity(mediaId).getContentType();
+    }
+
+    private cz.example.shopassistant.media.domain.MediaFile findEntity(String mediaId) {
+        return repository.findById(mediaId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Soubor neexistuje."));
+    }
+
+    private byte[] readBytes(cz.example.shopassistant.media.domain.MediaFile entity) {
+        try {
+            return Files.readAllBytes(Paths.get(entity.getStoragePath()));
+        } catch (IOException exception) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Soubor se nepodařilo načíst.");
+        }
     }
 
     private static String detectFormat(byte[] bytes) {

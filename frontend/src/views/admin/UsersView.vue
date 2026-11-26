@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { adminApi } from "@/api/admin.api";
-import type { User } from "@/types";
+import type { Role, User } from "@/types";
 import { formatDateTime } from "@/utils/format";
 import AppLayout from "@/components/layout/AppLayout.vue";
 import PageContainer from "@/components/layout/PageContainer.vue";
 import AppButton from "@/components/ui/AppButton.vue";
 import AppCard from "@/components/ui/AppCard.vue";
+import AppModal from "@/components/ui/AppModal.vue";
 
 const users = ref<User[]>([]);
 const loading = ref(false);
@@ -14,6 +15,13 @@ const error = ref<string | null>(null);
 const newEmail = ref("");
 const newPassword = ref("");
 const creating = ref(false);
+
+const editOpen = ref(false);
+const editingUser = ref<User | null>(null);
+const editRole = ref<Role>("USER");
+const editLimit = ref(20);
+const editEnabled = ref(true);
+const saving = ref(false);
 
 async function load() {
   loading.value = true;
@@ -63,6 +71,45 @@ async function toggleEnabled(user: User) {
   }
 }
 
+function openEdit(user: User) {
+  editingUser.value = user;
+  editRole.value = user.role;
+  editLimit.value = user.dailyLimit;
+  editEnabled.value = user.enabled;
+  error.value = null;
+  editOpen.value = true;
+}
+
+async function saveUser() {
+  if (!editingUser.value) {
+    return;
+  }
+  const limit = Number(editLimit.value);
+  if (!Number.isInteger(limit) || limit < 1 || limit > 10000) {
+    error.value = "Denní limit musí být celé číslo mezi 1 a 10000.";
+    return;
+  }
+  saving.value = true;
+  error.value = null;
+  try {
+    const updated = await adminApi.updateUser(editingUser.value.id, {
+      role: editRole.value,
+      enabled: editEnabled.value,
+      dailyLimit: limit,
+    });
+    const index = users.value.findIndex((user) => user.id === updated.id);
+    if (index >= 0) {
+      users.value[index] = updated;
+    }
+    editOpen.value = false;
+  } catch (cause) {
+    error.value =
+      cause instanceof Error ? cause.message : "Změnu se nepodařilo uložit.";
+  } finally {
+    saving.value = false;
+  }
+}
+
 onMounted(load);
 </script>
 
@@ -95,6 +142,7 @@ onMounted(load);
               type="password"
               data-testid="new-user-password"
               autocomplete="new-password"
+              minlength="8"
               required
             />
           </div>
@@ -130,14 +178,68 @@ onMounted(load);
               <td>{{ user.enabled ? "Aktivní" : "Zablokovaný" }}</td>
               <td>{{ formatDateTime(user.createdAt) }}</td>
               <td>
-                <AppButton size="sm" variant="secondary" @click="toggleEnabled(user)">
-                  {{ user.enabled ? "Zablokovat" : "Aktivovat" }}
-                </AppButton>
+                <div class="row">
+                  <AppButton size="sm" variant="secondary" @click="openEdit(user)">
+                    Upravit
+                  </AppButton>
+                  <AppButton size="sm" variant="secondary" @click="toggleEnabled(user)">
+                    {{ user.enabled ? "Zablokovat" : "Aktivovat" }}
+                  </AppButton>
+                </div>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
+
+      <AppModal v-model:open="editOpen" title="Úprava uživatele">
+        <form class="form-grid" @submit.prevent="saveUser">
+          <p v-if="editingUser" class="muted">{{ editingUser.email }}</p>
+          <div class="form-field">
+            <label class="form-label" for="edit-user-role">Role</label>
+            <select
+              id="edit-user-role"
+              v-model="editRole"
+              class="app-select"
+              data-testid="edit-user-role"
+            >
+              <option value="USER">Uživatel</option>
+              <option value="ADMIN">Administrátor</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="edit-user-limit">Denní limit</label>
+            <input
+              id="edit-user-limit"
+              v-model.number="editLimit"
+              class="app-input"
+              type="number"
+              min="1"
+              max="10000"
+              data-testid="edit-user-limit"
+            />
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="edit-user-enabled">Stav účtu</label>
+            <select
+              id="edit-user-enabled"
+              v-model="editEnabled"
+              class="app-select"
+              data-testid="edit-user-enabled"
+            >
+              <option :value="true">Aktivní</option>
+              <option :value="false">Zablokovaný</option>
+            </select>
+          </div>
+        </form>
+
+        <template #footer>
+          <AppButton variant="secondary" @click="editOpen = false">Zrušit</AppButton>
+          <AppButton data-testid="save-user" :loading="saving" @click="saveUser">
+            Uložit
+          </AppButton>
+        </template>
+      </AppModal>
     </PageContainer>
   </AppLayout>
 </template>

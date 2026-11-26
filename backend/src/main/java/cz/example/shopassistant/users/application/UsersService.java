@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.Locale;
 import java.util.Optional;
 
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -48,14 +49,23 @@ public class UsersService implements UsersApi {
 
     @Override
     public UserAccount create(String email, String passwordHash, String role, int dailyLimit) {
+        String normalizedEmail = normalize(email);
+        if (repository.findByEmail(normalizedEmail).isPresent()) {
+            throw conflict();
+        }
         User user = new User();
-        user.setEmail(normalize(email));
+        user.setEmail(normalizedEmail);
         user.setPasswordHash(passwordHash);
-        user.setRole(UserRole.valueOf(role));
+        user.setRole(parseRole(role));
         user.setDailyLimit(dailyLimit);
         user.setEnabled(true);
         user.setCreatedAt(Instant.now());
-        return toAccount(repository.save(user));
+        try {
+            return toAccount(repository.save(user));
+        } catch (DuplicateKeyException exception) {
+            // Duplicita může nastat i souběžně mezi kontrolou a zápisem.
+            throw conflict();
+        }
     }
 
     @Override
@@ -86,7 +96,7 @@ public class UsersService implements UsersApi {
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
                         org.springframework.http.HttpStatus.NOT_FOUND, "Uživatel neexistuje."));
         if (role != null && !role.isBlank()) {
-            user.setRole(UserRole.valueOf(role));
+            user.setRole(parseRole(role));
         }
         if (enabled != null) {
             user.setEnabled(enabled);
@@ -110,6 +120,22 @@ public class UsersService implements UsersApi {
 
     private static String normalize(String email) {
         return email.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private static UserRole parseRole(String role) {
+        try {
+            return UserRole.valueOf(role.trim().toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException exception) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST,
+                    "Neplatná role. Povolené hodnoty: USER, ADMIN.");
+        }
+    }
+
+    private static org.springframework.web.server.ResponseStatusException conflict() {
+        return new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.CONFLICT,
+                "Uživatel s tímto e-mailem už existuje.");
     }
 
     private static UserAccount toAccount(User user) {

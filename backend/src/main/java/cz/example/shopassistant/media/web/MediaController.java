@@ -37,13 +37,28 @@ public class MediaController {
 
     @GetMapping("/{id}")
     public ResponseEntity<byte[]> get(@PathVariable String id) {
-        String userId = currentUserId();
-        byte[] content = service.readContent(id, userId);
-        String type = service.contentType(id, userId);
+        byte[] content;
+        String type;
+        if (isAdmin()) {
+            // Admin prohlíží fotografie všech požadavků (včetně cizích).
+            content = service.readContentAny(id);
+            type = service.contentTypeAny(id);
+        } else {
+            String userId = currentUserId();
+            content = service.readContent(id, userId);
+            type = service.contentType(id, userId);
+        }
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_TYPE, type)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
                 .body(content);
+    }
+
+    private boolean isAdmin() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication != null
+                && authentication.getPrincipal() instanceof AuthenticatedUser principal
+                && principal.isAdmin();
     }
 
     private String currentUserId() {
