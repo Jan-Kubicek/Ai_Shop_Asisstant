@@ -13,6 +13,7 @@ const { items, loading, error } = storeToRefs(store);
 const actionError = ref<string | null>(null);
 const selected = ref<Set<string>>(new Set());
 const exporting = ref(false);
+const queuing = ref(false);
 
 function toggle(id: string) {
   if (selected.value.has(id)) {
@@ -21,6 +22,25 @@ function toggle(id: string) {
     selected.value.add(id);
   }
   selected.value = new Set(selected.value);
+}
+
+async function queueSelected() {
+  if (selected.value.size === 0) {
+    actionError.value = "Vyberte alespoň jeden požadavek.";
+    return;
+  }
+  queuing.value = true;
+  actionError.value = null;
+  try {
+    await Promise.all([...selected.value].map((id) => requestsApi.approve(id)));
+    selected.value = new Set();
+    await store.fetchList();
+  } catch (cause) {
+    actionError.value =
+      cause instanceof Error ? cause.message : "Přidání do fronty se nepodařilo.";
+  } finally {
+    queuing.value = false;
+  }
 }
 
 async function remove(id: string) {
@@ -87,9 +107,19 @@ onMounted(() => {
           <button
             type="button"
             class="app-button app-button--secondary"
+            :disabled="selected.size === 0 || queuing"
+            @click="queueSelected"
+          >
+            {{ queuing ? "Přidávám…" : "Přidat do fronty (" + selected.size + ")" }}
+          </button>
+          <button
+            type="button"
+            class="app-button app-button--secondary"
             :disabled="selected.size === 0 || exporting"
             @click="exportCombined"
           >
+            {{ exporting ? "Exportuji…" : "Exportovat JSON (" + selected.size + ")" }}
+          </button>
             {{ exporting ? "Exportuji…" : "Exportovat JSON (" + selected.size + ")" }}
           </button>
           <RouterLink

@@ -10,6 +10,17 @@ import AppButton from "@/components/ui/AppButton.vue";
 const items = ref<ShopQueueItem[]>([]);
 const loading = ref(false);
 const error = ref<string | null>(null);
+const selected = ref<Set<string>>(new Set());
+const exporting = ref(false);
+
+function toggle(id: string) {
+  if (selected.value.has(id)) {
+    selected.value.delete(id);
+  } else {
+    selected.value.add(id);
+  }
+  selected.value = new Set(selected.value);
+}
 
 async function load() {
   loading.value = true;
@@ -28,6 +39,8 @@ async function load() {
 async function markImported(item: ShopQueueItem) {
   try {
     await adminApi.markImported(item.id);
+    selected.value.delete(item.id);
+    selected.value = new Set(selected.value);
     await load();
   } catch (cause) {
     error.value =
@@ -50,6 +63,45 @@ async function download(item: ShopQueueItem) {
   }
 }
 
+async function exportCombined() {
+  if (selected.value.size === 0) {
+    error.value = "Vyberte alespoň jednu položku.";
+    return;
+  }
+  exporting.value = true;
+  error.value = null;
+  try {
+    const blobs = await Promise.all(
+      [...selected.value].map((id) => adminApi.exportJson(id))
+    );
+    const parsed = await Promise.all(
+      blobs.map(async (b) => {
+        const text = await b.text();
+        try {
+          return JSON.parse(text);
+        } catch {
+          return text;
+        }
+      })
+    );
+    const combined = parsed.flat();
+    const blob = new Blob([JSON.stringify(combined, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "woo-combined.json";
+    link.click();
+    URL.revokeObjectURL(url);
+  } catch (cause) {
+    error.value =
+      cause instanceof Error ? cause.message : "Export se nepodařil.";
+  } finally {
+    exporting.value = false;
+  }
+}
+
 onMounted(load);
 </script>
 
@@ -59,6 +111,15 @@ onMounted(load);
       title="Fronta e-shopu"
       subtitle="Požadavky připravené k importu do WooCommerce."
     >
+      <template #actions>
+        <AppButton
+          :disabled="selected.size === 0 || exporting"
+          @click="exportCombined"
+        >
+          {{ exporting ? "Exportuji…" : "Exportovat kombinovaný JSON (" + selected.size + ")" }}
+        </AppButton>
+      </template>
+
       <p v-if="error" class="alert alert--error">{{ error }}</p>
       <p v-if="loading" class="muted">Načítám…</p>
 
@@ -70,6 +131,7 @@ onMounted(load);
         <table class="table">
           <thead>
             <tr>
+              <th></th>
               <th>Vytvořeno</th>
               <th>ID požadavku</th>
               <th>Stav</th>
@@ -79,6 +141,13 @@ onMounted(load);
           </thead>
           <tbody>
             <tr v-for="item in items" :key="item.id">
+              <td>
+                <input
+                  type="checkbox"
+                  :checked="selected.has(item.id)"
+                  @change="toggle(item.id)"
+                />
+              </td>
               <td>{{ formatDateTime(item.createdAt) }}</td>
               <td>{{ item.requestId }}</td>
               <td>{{ item.status }}</td>
