@@ -6,7 +6,7 @@ springdoc:
 
 app:
   jwt:
-    cookie-secure: true
+    cookie-secure: ${JWT_COOKIE_SECURE:true}
 
 server:
   forward-headers-strategy: framework
