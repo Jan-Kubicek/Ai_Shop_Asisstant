@@ -144,6 +144,10 @@ Pro vývoj bez spotřeby tokenů:
 AI_PROVIDER_TEXT=fake java -jar target/shop-assistant-0.1.0-SNAPSHOT.jar
 ~~~
 
+Pohodlnější je `scripts/run-local.ps1` (případně `.sh`) – sám načte `.env`
+do prostředí a spustí backend, takže klíč nemusíte exportovat ručně.
+Docker Compose `.env` načítá sám (`docker compose up -d --force-recreate backend`).
+
 Výstup se validuje proti schématu v `schemas/product-text.schema.json`
 a prochází sanitizací (odstranění markdown bloků, kontrola povinných polí).
 
