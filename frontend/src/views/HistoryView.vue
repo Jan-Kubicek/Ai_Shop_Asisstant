@@ -11,6 +11,17 @@ import StatusBadge from "@/components/ui/StatusBadge.vue";
 const store = useRequestsStore();
 const { items, loading, error } = storeToRefs(store);
 const actionError = ref<string | null>(null);
+const selected = ref<Set<string>>(new Set());
+const exporting = ref(false);
+
+function toggle(id: string) {
+  if (selected.value.has(id)) {
+    selected.value.delete(id);
+  } else {
+    selected.value.add(id);
+  }
+  selected.value = new Set(selected.value);
+}
 
 async function remove(id: string) {
   if (!window.confirm("Opravdu chcete požadavek odstranit?")) {
@@ -19,10 +30,43 @@ async function remove(id: string) {
   actionError.value = null;
   try {
     await requestsApi.delete(id);
+    selected.value.delete(id);
+    selected.value = new Set(selected.value);
     await store.fetchList();
   } catch (cause) {
     actionError.value =
       cause instanceof Error ? cause.message : "Odstranění se nepodařilo.";
+  }
+}
+
+async function exportCombined() {
+  if (selected.value.size === 0) {
+    actionError.value = "Vyberte alespoň jeden požadavek.";
+    return;
+  }
+  exporting.value = true;
+  actionError.value = null;
+  try {
+    const results = await Promise.all(
+      [...selected.value].map((id) => requestsApi.result(id))
+    );
+    const combined = results
+      .map((r) => r.wooJson)
+      .filter((w) => w !== undefined && w !== null);
+    const blob = new Blob([JSON.stringify(combined, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "woo-export.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch (cause) {
+    actionError.value =
+      cause instanceof Error ? cause.message : "Export se nepodařil.";
+  } finally {
+    exporting.value = false;
   }
 }
 
@@ -39,13 +83,23 @@ onMounted(() => {
       data-testid="history-view"
     >
       <template #actions>
-        <RouterLink
-          to="/requests/new"
-          class="app-button"
-          data-testid="new-request-link"
-        >
-          Nový požadavek
-        </RouterLink>
+        <div class="row">
+          <button
+            type="button"
+            class="app-button app-button--secondary"
+            :disabled="selected.size === 0 || exporting"
+            @click="exportCombined"
+          >
+            {{ exporting ? "Exportuji…" : "Exportovat JSON (" + selected.size + ")" }}
+          </button>
+          <RouterLink
+            to="/requests/new"
+            class="app-button"
+            data-testid="new-request-link"
+          >
+            Nový požadavek
+          </RouterLink>
+        </div>
       </template>
 
       <p v-if="error" class="alert alert--error">{{ error }}</p>
@@ -60,6 +114,7 @@ onMounted(() => {
         <table class="table">
           <thead>
             <tr>
+              <th></th>
               <th>Vytvořeno</th>
               <th>Popis</th>
               <th>Stav</th>
@@ -68,6 +123,13 @@ onMounted(() => {
           </thead>
           <tbody>
             <tr v-for="item in items" :key="item.id">
+              <td>
+                <input
+                  type="checkbox"
+                  :checked="selected.has(item.id)"
+                  @change="toggle(item.id)"
+                />
+              </td>
               <td>{{ formatDateTime(item.createdAt) }}</td>
               <td>{{ item.description }}</td>
               <td><StatusBadge :status="item.status" /></td>
