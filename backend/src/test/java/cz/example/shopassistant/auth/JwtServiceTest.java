@@ -48,9 +48,9 @@ class JwtServiceTest {
     }
 
     @Test
-    void kratkySecretJeOdmítnut() {
-        assertThatThrownBy(() -> new JwtService("kratky", 15, 14))
+    void prazdnySecretJeOdmítnut() {
+        assertThatThrownBy(() -> new JwtService("", 15, 14))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("32");
+                .hasMessageContaining("JWT_SECRET");
     }
 }

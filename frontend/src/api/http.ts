@@ -100,6 +100,9 @@ export async function request<T>(
     if (refreshed) {
       return request<T>(path, { ...options, skipRefresh: true });
     }
+    // Refresh selhal (např. secret se změnil) – vyčistit starý token,
+    // aby se dál neposílal a uživatel se mohl znovu přihlásit.
+    accessToken = null;
   }
 
   if (!response.ok) {

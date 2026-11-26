@@ -1,6 +1,8 @@
 package cz.example.shopassistant.auth.application;
 
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
@@ -38,13 +40,24 @@ public class JwtService {
             @Value("${app.jwt.secret}") String secret,
             @Value("${app.jwt.access-ttl-minutes}") long accessTtlMinutes,
             @Value("${app.jwt.refresh-ttl-days}") long refreshTtlDays) {
-        if (secret == null || secret.getBytes(StandardCharsets.UTF_8).length < 32) {
-            throw new IllegalStateException(
-                    "app.jwt.secret musí mít alespoň 32 bajtů. Nastavte JWT_SECRET.");
-        }
-        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        // Stabilní klíč: SHA-256 ze secretu -> vždy HS256, nezávisle na délce
+        // ani znacích zadaného secretu. Změna secretu tak nemůže změnit algoritmus.
+        this.key = deriveKey(secret);
         this.accessTtl = Duration.ofMinutes(accessTtlMinutes);
         this.refreshTtl = Duration.ofDays(refreshTtlDays);
+    }
+
+    private static SecretKey deriveKey(String secret) {
+        if (secret == null || secret.isBlank()) {
+            throw new IllegalStateException("Nastavte JWT_SECRET v .env (alespoň 16 znaků).");
+        }
+        try {
+            byte[] hash = MessageDigest.getInstance("SHA-256")
+                    .digest(secret.getBytes(StandardCharsets.UTF_8));
+            return Keys.hmacShaKeyFor(hash);
+        } catch (NoSuchAlgorithmException exception) {
+            throw new IllegalStateException("SHA-256 není dostupné.", exception);
+        }
     }
 
     public String createAccessToken(UserAccount user) {
