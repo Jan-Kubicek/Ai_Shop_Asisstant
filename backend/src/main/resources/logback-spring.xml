@@ -4,7 +4,6 @@
 
   <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
     <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-      <includeMDC>true</includeMDC>
       <customFields>{"service":"ai-shop-assistant"}</customFields>
     </encoder>
   </appender>

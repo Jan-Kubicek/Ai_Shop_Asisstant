@@ -12,7 +12,7 @@ const originalSize = ref(0);
 
 const summary = computed(() => {
   if (!file.value) {
-    return "Vyberte fotku produktu (JPG, PNG nebo WebP).";
+    return "Vyberte fotku produktu (JPG, PNG, BMP nebo WebP).";
   }
   return file.value.name + " · " + formatBytes(file.value.size);
 });
@@ -56,7 +56,7 @@ onBeforeUnmount(() => {
       data-testid="photo-input"
       class="sr-only"
       type="file"
-      accept="image/jpeg,image/png,image/webp"
+      accept="image/jpeg,image/png,image/bmp,image/webp"
       @change="onChange"
     />
 

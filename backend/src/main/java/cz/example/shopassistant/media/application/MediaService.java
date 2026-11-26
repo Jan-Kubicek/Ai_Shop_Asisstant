@@ -81,7 +81,7 @@ public class MediaService implements MediaApi {
         String format = detectFormat(raw);
         if (format == null) {
             throw new ResponseStatusException(HttpStatus.UNSUPPORTED_MEDIA_TYPE,
-                    "Podporované formáty jsou JPG, PNG a WebP.");
+                    "Podporované formáty jsou JPG, PNG, BMP a WebP.");
         }
 
         byte[] processed = normalize(raw, format);
@@ -154,6 +154,9 @@ public class MediaService implements MediaApi {
                 && bytes[3] == 'F' && bytes[8] == 'W' && bytes[9] == 'E' && bytes[10] == 'B'
                 && bytes[11] == 'P') {
             return "webp";
+        }
+        if (bytes.length >= 2 && bytes[0] == 'B' && bytes[1] == 'M') {
+            return "bmp";
         }
         return null;
     }
@@ -230,6 +233,7 @@ public class MediaService implements MediaApi {
             case "jpg" -> "jpg";
             case "png" -> "png";
             case "webp" -> "webp";
+            case "bmp" -> "png";
             default -> "bin";
         };
     }
@@ -239,6 +243,7 @@ public class MediaService implements MediaApi {
             case "jpg" -> "image/jpeg";
             case "png" -> "image/png";
             case "webp" -> "image/webp";
+            case "bmp" -> "image/png";
             default -> "application/octet-stream";
         };
     }
