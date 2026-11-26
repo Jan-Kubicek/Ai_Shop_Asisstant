@@ -220,7 +220,45 @@ onMounted(async () => {
   await loadImages();
 });
 
-onBeforeUnmount(revokeImages);
+let autoSaveTimer: number | null = null;
+watch(
+  form,
+  () => {
+    if (!result.value || !editing.value) return;
+    if (autoSaveTimer) clearTimeout(autoSaveTimer);
+    autoSaveTimer = window.setTimeout(() => {
+      void saveSilently();
+    }, 1500);
+  },
+  { deep: true },
+);
+
+async function saveSilently() {
+  if (!result.value) return;
+  const webText = {
+    title: form.title,
+    shortDescription: form.shortDescription,
+    longDescription: form.longDescription,
+    keywords: form.keywords.split(",").map((item) => item.trim()).filter(Boolean),
+  };
+  const socialText = {
+    instagram: {
+      caption: form.instagramCaption,
+      hashtags: form.hashtags.split(/\s+/).map((item) => item.trim()).filter(Boolean),
+    },
+    facebook: { text: form.facebookText },
+  };
+  try {
+    result.value = await requestsApi.updateResult(id.value, { webText, socialText });
+  } catch {
+    // ignore
+  }
+}
+
+onBeforeUnmount(() => {
+  if (autoSaveTimer) clearTimeout(autoSaveTimer);
+  revokeImages();
+});
 
 watch(
   () => request.value?.status,
