@@ -33,6 +33,8 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: prod
       MONGO_URI: mongodb://$MONGO_APP_USER:$MONGO_APP_PASSWORD@mongo:27017/shopassistant?authSource=shopassistant
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:5173}
       STORAGE_LOCAL_PATH: /data/uploads
     volumes:
       - ./data/uploads:/data/uploads
