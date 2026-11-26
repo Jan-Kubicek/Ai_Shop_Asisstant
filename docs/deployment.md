@@ -6,6 +6,31 @@
 - Docker Engine a Docker Compose v2.
 - Veřejná IP a doména s DNS záznamem typu A na server.
 - Otevřené porty 80 a 443.
+- CPU **bez AVX** → používejte MongoDB 4.4 (v `docker-compose.yml` i `docker-compose.dev.yml` je `mongo:4.4`).
+  MongoDB 5+ na takovém CPU nenaběhne (`MongoDB 5.0+ requires a CPU with AVX support`).
+
+## MongoDB 4.4 a starší datové adresáře
+
+MongoDB 4.4 **neumí načíst data zapsaná MongoDB 7/8** (chyba `unsupported format version: 14`). Pokud přenášíte adresář `data/mongo` z prostředí s MongoDB 7, převeďte ho před spuštěním:
+
+~~~bash
+bash scripts/migrate-mongo44.sh            # výchozí: data/mongo
+bash scripts/migrate-mongo44.sh data/mongo-dev
+~~~
+
+Windows:
+
+~~~powershell
+.\scripts\migrate-mongo44.ps1
+.\scripts\migrate-mongo44.ps1 -DataDir data/mongo-dev -RootPassword root -AppPassword app
+~~~
+
+Skript vytvoří `mongodump` z MongoDB 7, zálohuje původní adresář na `*-backup-<timestamp>`,
+inicializuje nový adresář MongoDB 4.4 (včetně indexů z `infra/mongo/init`) a data obnoví.
+Pak teprve spusťte `docker compose up -d --build`.
+
+Pokud na serveru žádný starý adresář není (čistý klon z gitu, `data/` je ignorováno),
+není migrace potřeba – rovnou spusťte compose.
 
 ## První nasazení
 
@@ -142,3 +167,5 @@ Databázi obnovte ze zálohy, pokud nová verze změnila data.
 | Upload selže | práva <code>data/uploads</code>, <code>UPLOAD_MAX_MB</code> |
 | AI neodpovídá | API klíč, kvóta, timeout, logy <code>ai_calls</code> |
 | Mongo se nepřipojí | hesla v <code>.env</code>, <code>MONGO_URI</code>, healthcheck |
+| Mongo padá s <code>requires a CPU with AVX support</code> | použít <code>mongo:4.4</code> (výchozí v compose) |
+| Mongo padá s <code>unsupported format version: 14</code> | data jsou z MongoDB 7 – spusťte <code>scripts/migrate-mongo44.sh</code> nebo <code>.ps1</code> |
