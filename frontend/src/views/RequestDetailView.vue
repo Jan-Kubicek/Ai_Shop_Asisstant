@@ -26,6 +26,8 @@ const downloading = ref(false);
 const saving = ref(false);
 const approving = ref(false);
 const editing = ref(false);
+const regenerating = ref(false);
+const regeneratePart = ref("webText");
 
 const form = reactive({
   title: "",
@@ -111,6 +113,20 @@ async function approve() {
     resultError.value = cause instanceof Error ? cause.message : "Schválení se nepodařilo.";
   } finally {
     approving.value = false;
+  }
+}
+
+async function regenerate() {
+  regenerating.value = true;
+  resultError.value = null;
+  try {
+    await requestsApi.regenerate(id.value, regeneratePart.value);
+    await loadResult();
+  } catch (cause) {
+    resultError.value =
+      cause instanceof Error ? cause.message : "Opakované generování se nepodařilo.";
+  } finally {
+    regenerating.value = false;
   }
 }
 
@@ -219,6 +235,29 @@ watch(
               <div class="row">
                 <AppButton data-testid="edit-result" variant="secondary" size="sm" @click="editing = true">
                   Upravit výsledek
+                </AppButton>
+              </div>
+
+              <div class="row">
+                <select
+                  v-model="regeneratePart"
+                  class="app-select"
+                  data-testid="regenerate-part"
+                  aria-label="Část k znovuvygenerování"
+                >
+                  <option value="webText">Popis pro web</option>
+                  <option value="socialText">Instagram a Facebook</option>
+                  <option value="marketingText">Marketing a byznys</option>
+                  <option value="modelImage">Fotka modelu</option>
+                </select>
+                <AppButton
+                  data-testid="regenerate-result"
+                  variant="secondary"
+                  size="sm"
+                  :loading="regenerating"
+                  @click="regenerate"
+                >
+                  Vygenerovat znovu
                 </AppButton>
               </div>
             </AppCard>
