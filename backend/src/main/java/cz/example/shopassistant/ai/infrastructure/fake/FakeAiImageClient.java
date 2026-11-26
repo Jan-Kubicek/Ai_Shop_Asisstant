@@ -8,6 +8,7 @@ import java.io.ByteArrayOutputStream;
 
 import javax.imageio.ImageIO;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import cz.example.shopassistant.ai.application.AiException;
@@ -18,6 +19,7 @@ import cz.example.shopassistant.ai.application.AiImageResult;
  * Falešný image skill – vrátí deterministický obrázek 1000 × 1000 bez API volání.
  */
 @Component
+@ConditionalOnProperty(name = "app.ai.image-provider", havingValue = "fake", matchIfMissing = true)
 public class FakeAiImageClient implements AiImageClient {
 
     @Override
