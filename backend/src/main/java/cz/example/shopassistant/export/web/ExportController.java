@@ -72,7 +72,8 @@ public class ExportController {
         String wooJson = exportApi.buildWooJson(id, webText, socialText,
                 request.mediaId() != null ? request.mediaId() : "", request.sizePrices());
         exportApi.saveResult(id, webText, socialText, wooJson,
-                current.marketingTextJson(), current.modelImageUrl());
+                current.marketingTextJson(), current.productImageUrl(),
+                current.modelImageUrl(), current.modelMediaId());
 
         return toView(exportApi.findByRequestId(id).orElseThrow());
     }
@@ -135,6 +136,7 @@ public class ExportController {
                     data.requestId(),
                     objectMapper.readTree(data.webTextJson()),
                     objectMapper.readTree(data.socialTextJson()),
+                    data.productImageUrl(),
                     data.modelImageUrl(),
                     objectMapper.readTree(data.wooJson()),
                     data.marketingTextJson() != null && !data.marketingTextJson().isBlank()
@@ -149,6 +151,7 @@ public class ExportController {
             String requestId,
             JsonNode webText,
             JsonNode socialText,
+            String productImageUrl,
             String modelImageUrl,
             JsonNode wooJson,
             JsonNode marketingText,

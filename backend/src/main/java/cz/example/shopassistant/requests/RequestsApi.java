@@ -23,6 +23,7 @@ public interface RequestsApi {
             String status,
             String errorMessage,
             String mediaId,
+            String originalMediaId,
             java.util.List<SizePrice> sizePrices,
             Instant createdAt,
             Instant finishedAt) {

@@ -21,4 +21,6 @@ public interface MediaApi {
     void delete(String mediaId, String ownerId);
 
     MediaFile storeBytes(String ownerId, byte[] content, String filename, String contentType);
+
+    String originalId(String mediaId, String ownerId);
 }

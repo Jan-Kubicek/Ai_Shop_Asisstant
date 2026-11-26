@@ -240,9 +240,17 @@ public class RequestsService implements RequestsApi {
                 request.getStatus().name(),
                 request.getErrorMessage(),
                 request.getMediaId(),
+                originalMediaId(request),
                 toApiSizePrices(request.getSizePrices()),
                 request.getCreatedAt(),
                 request.getFinishedAt());
+    }
+
+    private String originalMediaId(Request request) {
+        if (request.getMediaId() == null) {
+            return null;
+        }
+        return mediaApi.originalId(request.getMediaId(), request.getUserId());
     }
 
     private static java.util.List<cz.example.shopassistant.requests.RequestsApi.SizePrice> toApiSizePrices(
@@ -356,6 +364,8 @@ public class RequestsService implements RequestsApi {
                 request.getId(),
                 request.getDescription(),
                 request.getOptions() != null ? request.getOptions() : new Request.RequestOptions(),
+                request.getMediaId(),
+                originalMediaId(request),
                 toApiSizePrices(request.getSizePrices()),
                 request.getStatus().name(),
                 request.getErrorMessage(),
@@ -367,6 +377,8 @@ public class RequestsService implements RequestsApi {
             String id,
             String description,
             Request.RequestOptions options,
+            String mediaId,
+            String originalMediaId,
             java.util.List<cz.example.shopassistant.requests.RequestsApi.SizePrice> sizePrices,
             String status,
             String errorMessage,

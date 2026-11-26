@@ -92,11 +92,20 @@ public class MediaService implements MediaApi {
             return toApi(existing);
         }
 
-        String filename = UUID.randomUUID() + "." + extension(format);
+        String groupId = UUID.randomUUID().toString();
+        save(ownerId, raw, "original-" + groupId + "." + originalExtension(format),
+                originalContentType(format), groupId, "original", "orig-" + groupId);
+        return toApi(save(ownerId, processed, groupId + "." + extension(format),
+                contentType(format), groupId, "normalized", sha256));
+    }
+
+    private cz.example.shopassistant.media.domain.MediaFile save(
+            String ownerId, byte[] content, String filename, String contentType,
+            String groupId, String variant, String sha256) {
         Path target = storageRoot.resolve(filename);
         try {
             Files.createDirectories(storageRoot);
-            Files.write(target, processed);
+            Files.write(target, content);
         } catch (IOException exception) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                     "Fotku se nepodařilo uložit.");
@@ -105,13 +114,26 @@ public class MediaService implements MediaApi {
         cz.example.shopassistant.media.domain.MediaFile media = new cz.example.shopassistant.media.domain.MediaFile();
         media.setOwnerId(ownerId);
         media.setFilename(filename);
-        media.setContentType(contentType(format));
-        media.setSizeBytes(processed.length);
+        media.setContentType(contentType);
+        media.setSizeBytes(content.length);
         media.setSha256(sha256);
         media.setStoragePath(target.toString());
+        media.setGroupId(groupId);
+        media.setVariant(variant);
         media.setCreatedAt(Instant.now());
+        return repository.save(media);
+    }
 
-        return toApi(repository.save(media));
+    @Override
+    public String originalId(String mediaId, String ownerId) {
+        cz.example.shopassistant.media.domain.MediaFile current = repository.findById(mediaId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Soubor neexistuje."));
+        if (!current.getOwnerId().equals(ownerId) || current.getGroupId() == null) {
+            return null;
+        }
+        return repository.findByGroupIdAndVariant(current.getGroupId(), "original")
+                .map(cz.example.shopassistant.media.domain.MediaFile::getId)
+                .orElse(null);
     }
 
     @Override
@@ -235,6 +257,26 @@ public class MediaService implements MediaApi {
             case "webp" -> "webp";
             case "bmp" -> "png";
             default -> "bin";
+        };
+    }
+
+    private static String originalExtension(String format) {
+        return switch (format) {
+            case "jpg" -> "jpg";
+            case "png" -> "png";
+            case "webp" -> "webp";
+            case "bmp" -> "bmp";
+            default -> "bin";
+        };
+    }
+
+    private static String originalContentType(String format) {
+        return switch (format) {
+            case "jpg" -> "image/jpeg";
+            case "png" -> "image/png";
+            case "webp" -> "image/webp";
+            case "bmp" -> "image/bmp";
+            default -> "application/octet-stream";
         };
     }
 

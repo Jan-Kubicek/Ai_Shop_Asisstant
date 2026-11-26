@@ -52,6 +52,8 @@ export interface ShopRequest {
   options: RequestOptions;
   status: RequestStatus;
   errorMessage?: string;
+  mediaId?: string;
+  originalMediaId?: string;
   createdAt: string;
   finishedAt?: string;
   sizePrices?: SizePrice[];
@@ -78,6 +80,7 @@ export interface RequestResult {
   requestId: string;
   webText?: ProductText;
   socialText?: SocialText;
+  productImageUrl?: string;
   modelImageUrl?: string;
   wooJson?: unknown;
   marketingText?: Record<string, unknown>;

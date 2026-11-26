@@ -82,7 +82,9 @@ public class PipelineController {
         String webText = current.webTextJson();
         String socialText = current.socialTextJson();
         String marketingText = current.marketingTextJson();
+        String productImageUrl = current.productImageUrl();
         String modelImageUrl = current.modelImageUrl();
+        String modelMediaId = current.modelMediaId();
         int promptTokens = 0;
         int completionTokens = 0;
 
@@ -114,6 +116,7 @@ public class PipelineController {
                         request.userId(), image.image(), image.description() + ".png",
                         image.contentType());
                 modelImageUrl = "/api/v1/media/" + stored.id();
+                modelMediaId = stored.id();
             }
             default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Podporované části: webText, socialText, marketingText, modelImage.");
@@ -121,7 +124,8 @@ public class PipelineController {
 
         String wooJson = exportApi.buildWooJson(id, webText, socialText,
                 request.mediaId() != null ? request.mediaId() : "", request.sizePrices());
-        exportApi.saveResult(id, webText, socialText, wooJson, marketingText, modelImageUrl);
+        exportApi.saveResult(id, webText, socialText, wooJson, marketingText,
+                productImageUrl, modelImageUrl, modelMediaId);
 
         AiCall call = new AiCall();
         call.setRequestId(id);

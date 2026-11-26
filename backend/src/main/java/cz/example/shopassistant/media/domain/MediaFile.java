@@ -28,6 +28,10 @@ public class MediaFile {
 
     private String storagePath;
 
+    private String variant;
+
+    private String groupId;
+
     private Instant createdAt;
 
     public String getId() { return id; }
@@ -44,6 +48,10 @@ public class MediaFile {
     public void setSha256(String sha256) { this.sha256 = sha256; }
     public String getStoragePath() { return storagePath; }
     public void setStoragePath(String storagePath) { this.storagePath = storagePath; }
+    public String getVariant() { return variant; }
+    public void setVariant(String variant) { this.variant = variant; }
+    public String getGroupId() { return groupId; }
+    public void setGroupId(String groupId) { this.groupId = groupId; }
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
 }

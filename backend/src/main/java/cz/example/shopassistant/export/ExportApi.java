@@ -14,13 +14,16 @@ public interface ExportApi {
             String socialTextJson,
             String wooJson,
             String marketingTextJson,
+            String productImageUrl,
             String modelImageUrl,
+            String modelMediaId,
             Instant createdAt,
             Instant updatedAt) {
     }
 
     void saveResult(String requestId, String webTextJson, String socialTextJson,
-            String wooJson, String marketingTextJson, String modelImageUrl);
+            String wooJson, String marketingTextJson, String productImageUrl,
+            String modelImageUrl, String modelMediaId);
 
     java.util.Optional<ResultData> findByRequestId(String requestId);
 

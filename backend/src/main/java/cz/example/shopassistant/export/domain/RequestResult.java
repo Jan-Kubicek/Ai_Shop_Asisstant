@@ -23,7 +23,11 @@ public class RequestResult {
 
     private String marketingTextJson;
 
+    private String productImageUrl;
+
     private String modelImageUrl;
+
+    private String modelMediaId;
 
     private Instant createdAt;
 
@@ -41,6 +45,10 @@ public class RequestResult {
     public void setWooJson(String wooJson) { this.wooJson = wooJson; }
     public String getMarketingTextJson() { return marketingTextJson; }
     public void setMarketingTextJson(String marketingTextJson) { this.marketingTextJson = marketingTextJson; }
+    public String getProductImageUrl() { return productImageUrl; }
+    public void setProductImageUrl(String productImageUrl) { this.productImageUrl = productImageUrl; }
+    public String getModelMediaId() { return modelMediaId; }
+    public void setModelMediaId(String modelMediaId) { this.modelMediaId = modelMediaId; }
     public String getModelImageUrl() { return modelImageUrl; }
     public void setModelImageUrl(String modelImageUrl) { this.modelImageUrl = modelImageUrl; }
     public Instant getCreatedAt() { return createdAt; }

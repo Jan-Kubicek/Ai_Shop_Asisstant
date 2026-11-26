@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { requestsApi } from "@/api/requests.api";
+import { mediaApi } from "@/api/media.api";
 import { useRequestStatus } from "@/composables/useRequestStatus";
 import { useAuthStore } from "@/stores/auth";
 import type { RequestResult } from "@/types";
@@ -11,7 +12,6 @@ import PageContainer from "@/components/layout/PageContainer.vue";
 import AppButton from "@/components/ui/AppButton.vue";
 import AppCard from "@/components/ui/AppCard.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
-import ImagePreview from "@/components/result/ImagePreview.vue";
 import JsonViewer from "@/components/result/JsonViewer.vue";
 import TextResultCard from "@/components/result/TextResultCard.vue";
 
@@ -22,6 +22,9 @@ const id = computed(() => String(route.params.id));
 const { request, error, start, reload } = useRequestStatus(id.value, 1500);
 const result = ref<RequestResult | null>(null);
 const resultError = ref<string | null>(null);
+const originalImageUrl = ref<string | null>(null);
+const productImageUrl = ref<string | null>(null);
+const modelImageUrl = ref<string | null>(null);
 const downloading = ref(false);
 const saving = ref(false);
 const approving = ref(false);
@@ -73,9 +76,58 @@ async function loadResult() {
     result.value = await requestsApi.result(id.value);
     fillForm();
     resultError.value = null;
+    void loadImages();
   } catch {
     resultError.value = "Výsledek ještě není k dispozici.";
   }
+}
+
+let imageGeneration = 0;
+
+async function loadImages() {
+  const generation = ++imageGeneration;
+  const urls: Record<string, string> = {};
+
+  const ids: Array<[string, string | undefined]> = [
+    ["originalImageUrl", request.value?.originalMediaId],
+    ["productImageUrl", request.value?.mediaId],
+    ["modelImageUrl", result.value?.modelImageUrl?.split("/").pop()],
+  ];
+
+  for (const [key, mediaId] of ids) {
+    if (!mediaId) {
+      continue;
+    }
+    try {
+      const blob = await mediaApi.download(mediaId);
+      urls[key] = URL.createObjectURL(blob);
+    } catch {
+      // Fotku se nepodařilo načíst – necháme ji skrytou.
+    }
+  }
+
+  if (generation !== imageGeneration) {
+    for (const url of Object.values(urls)) {
+      URL.revokeObjectURL(url);
+    }
+    return;
+  }
+
+  revokeImages();
+  originalImageUrl.value = urls.originalImageUrl ?? null;
+  productImageUrl.value = urls.productImageUrl ?? null;
+  modelImageUrl.value = urls.modelImageUrl ?? null;
+}
+
+function revokeImages() {
+  for (const url of [originalImageUrl.value, productImageUrl.value, modelImageUrl.value]) {
+    if (url) {
+      URL.revokeObjectURL(url);
+    }
+  }
+  originalImageUrl.value = null;
+  productImageUrl.value = null;
+  modelImageUrl.value = null;
 }
 
 async function save() {
@@ -130,6 +182,21 @@ async function regenerate() {
   }
 }
 
+async function downloadMedia(id: string, filename: string) {
+  try {
+    const blob = await mediaApi.download(id);
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(url);
+  } catch (cause) {
+    resultError.value =
+      cause instanceof Error ? cause.message : "Fotku se nepodařilo stáhnout.";
+  }
+}
+
 async function download() {
   downloading.value = true;
   try {
@@ -150,7 +217,10 @@ async function download() {
 onMounted(async () => {
   start();
   await loadResult();
+  await loadImages();
 });
+
+onBeforeUnmount(revokeImages);
 
 watch(
   () => request.value?.status,
@@ -158,6 +228,13 @@ watch(
     if (status === "REVIEW" || status === "QUEUED_FOR_SHOP" || status === "IMPORTED") {
       void loadResult();
     }
+  },
+);
+
+watch(
+  () => [request.value?.mediaId, request.value?.originalMediaId],
+  () => {
+    void loadImages();
   },
 );
 </script>
@@ -306,11 +383,46 @@ watch(
         </div>
 
         <div class="stack">
-          <ImagePreview
-            v-if="result?.modelImageUrl"
-            :src="result.modelImageUrl"
-            alt="Fotka produktu"
-          />
+          <AppCard title="Fotky">
+            <div class="stack">
+              <div v-if="originalImageUrl" class="photo-item">
+                <img :src="originalImageUrl" alt="Původní fotka produktu" />
+                <AppButton
+                  variant="secondary"
+                  size="sm"
+                  data-testid="download-original"
+                  @click="downloadMedia(request!.originalMediaId!, 'original.png')"
+                >
+                  Stáhnout původní
+                </AppButton>
+              </div>
+              <div v-if="productImageUrl" class="photo-item">
+                <img :src="productImageUrl" alt="Upravená fotka 1000x1000" />
+                <AppButton
+                  variant="secondary"
+                  size="sm"
+                  data-testid="download-product"
+                  @click="downloadMedia(request!.mediaId!, 'product-1000x1000.png')"
+                >
+                  Stáhnout upravenou
+                </AppButton>
+              </div>
+              <div v-if="modelImageUrl" class="photo-item">
+                <img :src="modelImageUrl" alt="Modelová fotka" />
+                <AppButton
+                  variant="secondary"
+                  size="sm"
+                  data-testid="download-model"
+                  @click="downloadMedia(result!.modelImageUrl!.split('/').pop()!, 'model-photo.png')"
+                >
+                  Stáhnout modelovou
+                </AppButton>
+              </div>
+              <p v-if="!originalImageUrl && !productImageUrl && !modelImageUrl" class="muted">
+                Fotky se ještě načítají.
+              </p>
+            </div>
+          </AppCard>
           <AppCard v-if="result?.wooJson" title="JSON pro WordPress">
             <JsonViewer :value="result.wooJson" />
           </AppCard>

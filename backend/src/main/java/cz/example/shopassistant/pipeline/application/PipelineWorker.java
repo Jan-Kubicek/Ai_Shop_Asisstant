@@ -76,7 +76,9 @@ public class PipelineWorker {
                 JsonNode socialText = social.json();
                 JsonNode marketingText = marketing.json();
                 String mediaId = request.mediaId() != null ? request.mediaId() : "";
-                String modelImageUrl = "/api/v1/media/" + mediaId;
+                String productImageUrl = "/api/v1/media/" + mediaId;
+                String modelImageUrl = null;
+                String modelMediaId = null;
 
                 int imagePromptTokens = 0;
                 int imageCompletionTokens = 0;
@@ -90,6 +92,7 @@ public class PipelineWorker {
                             request.userId(), image.image(), image.description() + ".png",
                             image.contentType());
                     modelImageUrl = "/api/v1/media/" + stored.id();
+                    modelMediaId = stored.id();
                     // Image skill je teď fake – tokeny se nepočítají.
                 }
 
@@ -103,7 +106,9 @@ public class PipelineWorker {
                         socialText.toString(),
                         wooJson,
                         marketingText.toString(),
-                        modelImageUrl);
+                        productImageUrl,
+                        modelImageUrl,
+                        modelMediaId);
                 requestsApi.markReview(request.id());
                 recordCall(request.id(), "SUCCESS", started,
                         web.promptTokens() + social.promptTokens() + marketing.promptTokens()
