@@ -141,8 +141,12 @@ Modelová fotka se řídí `AI_PROVIDER_IMAGE`: `fake` (výchozí), `openai`
 
 Pozor na kvóty: image modely Gemini mají na free tier limit **0** (vrátí 429
 `RESOURCE_EXHAUSTED`) a OpenAI Images vyžaduje kredit (jinak 429
-`insufficient_quota`). Pro reálnou modelovou fotku je tedy nutné zapnout
-placený tier/billing u poskytovatele; jinak používejte `fake`.
+`insufficient_quota`).
+
+Jako skutečně free alternativa bez klíče je `pollinations` (veřejné API
+Pollinations.ai, `POLLINATIONS_BASE_URL`). Funguje, ale nejde o SLA službu
+a u dětského oblečení je nutné spoléhat na safety prefix v promptu – pro
+produkci raději placený provider. Jinak používejte `fake`.
 
 Pro vývoj bez spotřeby tokenů:
 
