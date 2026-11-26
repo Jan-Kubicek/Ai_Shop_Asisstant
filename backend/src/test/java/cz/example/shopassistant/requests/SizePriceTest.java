@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationEventPublisher;
@@ -17,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.example.shopassistant.ai.AiImageApi;
 import cz.example.shopassistant.media.MediaApi;
+import cz.example.shopassistant.users.UsersApi;
 import cz.example.shopassistant.requests.application.RequestsService;
 import cz.example.shopassistant.requests.application.RequestsService.CreatedRequestView;
 import cz.example.shopassistant.requests.domain.Request;
@@ -29,13 +31,19 @@ class SizePriceTest {
         RequestRepository repository = mock(RequestRepository.class);
         MediaApi mediaApi = mock(MediaApi.class);
         ApplicationEventPublisher events = mock(ApplicationEventPublisher.class);
+        UsersApi usersApi = mock(UsersApi.class);
 
         when(mediaApi.store(anyString(), any(MultipartFile.class))).thenReturn(
                 new MediaApi.MediaFile("m1", "u1", "image/png", 1L, "x.png", Instant.now()));
         when(repository.save(any(Request.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(usersApi.findById("u1")).thenReturn(Optional.of(new UsersApi.UserAccount(
+                "u1", "a@example.com", "hash", "USER", true, 100, Instant.now(), null)));
+        when(repository.findByUserIdAndCreatedAtAfter(anyString(), any(Instant.class)))
+                .thenReturn(java.util.List.of());
 
         RequestsService service = new RequestsService(
-                repository, mediaApi, new ObjectMapper(), events, mock(AiImageApi.class));
+                repository, mediaApi, new ObjectMapper(), events,
+                mock(AiImageApi.class), usersApi, 3);
 
         String options = """
                 {

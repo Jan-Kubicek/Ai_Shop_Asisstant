@@ -170,6 +170,11 @@ Výsledek lze upravit přes `PATCH /api/v1/requests/{id}/result` a stáhnout
 celý balík přes `GET /api/v1/requests/{id}/download` (ZIP s texty, exportem
 a fotkou).
 
+Denní limity se kontrolují při vytvoření požadavku: počet požadavků
+podle `User.dailyLimit` (výchozí 20) a počet modelových fotek podle
+`LIMIT_MODEL_PHOTOS_PER_DAY` (výchozí 3). Při překročení API vrátí
+`429 RATE_LIMITED`.
+
 E2E s mockovanou AI (vyžaduje `AI_PROVIDER_TEXT=fake`):
 
 ~~~bash

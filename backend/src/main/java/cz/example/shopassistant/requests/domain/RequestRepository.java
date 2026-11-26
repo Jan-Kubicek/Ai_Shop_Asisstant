@@ -19,4 +19,6 @@ public interface RequestRepository extends MongoRepository<Request, String> {
     long countByCreatedAtAfter(java.time.Instant since);
 
     List<Request> findByCreatedAtAfter(java.time.Instant since);
+
+    List<Request> findByUserIdAndCreatedAtAfter(String userId, java.time.Instant since);
 }

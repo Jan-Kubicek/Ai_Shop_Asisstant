@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.example.shopassistant.ai.AiImageApi;
 import cz.example.shopassistant.media.MediaApi;
+import cz.example.shopassistant.users.UsersApi;
 import cz.example.shopassistant.requests.RequestsApi;
 import cz.example.shopassistant.requests.RequestStatusChangedEvent;
 import cz.example.shopassistant.requests.RequestsApi.RequestView;
@@ -33,14 +35,24 @@ public class RequestsService implements RequestsApi {
     private final ObjectMapper objectMapper;
     private final ApplicationEventPublisher events;
     private final AiImageApi imageApi;
+    private final UsersApi usersApi;
+    private final int modelPhotoLimit;
 
-    public RequestsService(RequestRepository repository, MediaApi mediaApi, ObjectMapper objectMapper,
-            ApplicationEventPublisher events, AiImageApi imageApi) {
+    public RequestsService(
+            RequestRepository repository,
+            MediaApi mediaApi,
+            ObjectMapper objectMapper,
+            ApplicationEventPublisher events,
+            AiImageApi imageApi,
+            UsersApi usersApi,
+            @Value("${app.limits.model-photos-per-day:3}") int modelPhotoLimit) {
         this.repository = repository;
         this.mediaApi = mediaApi;
         this.objectMapper = objectMapper;
         this.events = events;
         this.imageApi = imageApi;
+        this.usersApi = usersApi;
+        this.modelPhotoLimit = Math.max(modelPhotoLimit, 0);
     }
 
     public CreatedRequestView create(String userId, MultipartFile photo, String description, String optionsJson) {
@@ -48,14 +60,16 @@ public class RequestsService implements RequestsApi {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Popis je příliš krátký.");
         }
 
-        MediaApi.MediaFile media = mediaApi.store(userId, photo);
-
         Request.RequestOptions options = parseOptions(optionsJson);
         try {
             imageApi.validateModelDescription(options.getModelDescription());
         } catch (IllegalArgumentException exception) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, exception.getMessage());
         }
+
+        enforceDailyLimits(userId, options);
+
+        MediaApi.MediaFile media = mediaApi.store(userId, photo);
 
         Request request = new Request();
         request.setUserId(userId);
@@ -131,6 +145,32 @@ public class RequestsService implements RequestsApi {
     @Override
     public long countFailed() {
         return repository.countByStatus(RequestStatus.FAILED);
+    }
+
+    private void enforceDailyLimits(String userId, Request.RequestOptions options) {
+        cz.example.shopassistant.users.UsersApi.UserAccount account = usersApi.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                        "Uživatel neexistuje."));
+
+        Instant since = java.time.LocalDate.now()
+                .atStartOfDay(java.time.ZoneId.systemDefault()).toInstant();
+        java.util.List<Request> today = repository.findByUserIdAndCreatedAtAfter(userId, since);
+
+        int requestLimit = Math.max(account.dailyLimit(), 0);
+        if (today.size() >= requestLimit) {
+            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,
+                    "Denní limit požadavků (" + requestLimit + ") byl dosažen.");
+        }
+
+        if (options.isGenerateModelPhoto()) {
+            long photos = today.stream()
+                    .filter(item -> item.getOptions() != null && item.getOptions().isGenerateModelPhoto())
+                    .count();
+            if (photos >= modelPhotoLimit) {
+                throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,
+                        "Denní limit modelových fotek (" + modelPhotoLimit + ") byl dosažen.");
+            }
+        }
     }
 
     @Override
