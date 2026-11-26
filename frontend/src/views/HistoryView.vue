@@ -120,8 +120,6 @@ onMounted(() => {
           >
             {{ exporting ? "Exportuji…" : "Exportovat JSON (" + selected.size + ")" }}
           </button>
-            {{ exporting ? "Exportuji…" : "Exportovat JSON (" + selected.size + ")" }}
-          </button>
           <RouterLink
             to="/requests/new"
             class="app-button"
