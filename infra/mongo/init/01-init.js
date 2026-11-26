@@ -1,9 +1,9 @@
 // Vytvoří aplikačního uživatele a indexy.
 // Skript se spustí pouze při první inicializaci datového adresáře.
 
-const appDbName = process.env.MONGO_DATABASE || "shopassistant";
-const appUser = process.env.MONGO_APP_USER || "app";
-const appPassword = process.env.MONGO_APP_PASSWORD;
+const appDbName = _getEnv('MONGO_DATABASE') || "shopassistant";
+const appUser = _getEnv('MONGO_APP_USER') || "app";
+const appPassword = _getEnv('MONGO_APP_PASSWORD');
 
 if (!appPassword) {
   print("MONGO_APP_PASSWORD není nastaveno, přeskakuji vytvoření aplikačního uživatele.");
