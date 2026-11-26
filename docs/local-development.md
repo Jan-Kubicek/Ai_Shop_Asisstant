@@ -130,7 +130,8 @@ Backend používá rozhraní `AiTextClient`. Ve výchozím nastavení běží
 
 Poskytovatele textu vybírá `AI_PROVIDER_TEXT`:
 
-- `gemini` (výchozí) – `GEMINI_API_KEY`, model `AI_MODEL_TEXT`,
+- `gemini` (výchozí) – `GEMINI_API_KEY`, model `AI_MODEL_TEXT` (výchozí
+  `gemini-3.1-flash-lite`, šetrný k free tier kvótě),
 - `openai` – `OPENAI_API_KEY`, model `OPENAI_MODEL` (výchozí `gpt-4.1-mini`),
 - `fake` – žádné API volání, fixní JSON.
 
