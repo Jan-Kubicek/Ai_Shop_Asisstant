@@ -126,9 +126,13 @@ public class MediaService implements MediaApi {
 
     @Override
     public String originalId(String mediaId, String ownerId) {
-        cz.example.shopassistant.media.domain.MediaFile current = repository.findById(mediaId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Soubor neexistuje."));
-        if (!current.getOwnerId().equals(ownerId) || current.getGroupId() == null) {
+        if (mediaId == null) {
+            return null;
+        }
+        // Chybějící záznam nesmí zablokovat celý seznam požadavků – historie
+        // se zobrazí i když byla související fotka mezitím smazána.
+        cz.example.shopassistant.media.domain.MediaFile current = repository.findById(mediaId).orElse(null);
+        if (current == null || !current.getOwnerId().equals(ownerId) || current.getGroupId() == null) {
             return null;
         }
         return repository.findByGroupIdAndVariant(current.getGroupId(), "original")
