@@ -135,9 +135,14 @@ Poskytovatele textu vybírá `AI_PROVIDER_TEXT`:
 - `openai` – `OPENAI_API_KEY`, model `OPENAI_MODEL` (výchozí `gpt-4.1-mini`),
 - `fake` – žádné API volání, fixní JSON.
 
-Modelová fotka se řídí `AI_PROVIDER_IMAGE`: `fake` (výchozí) nebo `openai`
-(`gpt-image-1.5`, proměnná `OPENAI_IMAGE_MODEL`). OpenAI Images potřebuje
-kredit na platform.openai.com – bez kreditu vrátí 429 `insufficient_quota`.
+Modelová fotka se řídí `AI_PROVIDER_IMAGE`: `fake` (výchozí), `openai`
+(`gpt-image-1.5`, `OPENAI_IMAGE_MODEL`) nebo `gemini`
+(`gemini-2.5-flash-image`, `AI_GEMINI_IMAGE_MODEL`).
+
+Pozor na kvóty: image modely Gemini mají na free tier limit **0** (vrátí 429
+`RESOURCE_EXHAUSTED`) a OpenAI Images vyžaduje kredit (jinak 429
+`insufficient_quota`). Pro reálnou modelovou fotku je tedy nutné zapnout
+placený tier/billing u poskytovatele; jinak používejte `fake`.
 
 Pro vývoj bez spotřeby tokenů:
 
