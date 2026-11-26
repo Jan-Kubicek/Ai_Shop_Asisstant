@@ -23,6 +23,10 @@ export const requestsApi = {
     return request<Page<ShopRequest>>("/requests?page=" + page + "&size=" + size);
   },
 
+  listAll(page = 0, size = 20): Promise<Page<ShopRequest>> {
+    return request<Page<ShopRequest>>("/requests/admin/all?page=" + page + "&size=" + size);
+  },
+
   get(id: string): Promise<ShopRequest> {
     return request<ShopRequest>("/requests/" + id);
   },

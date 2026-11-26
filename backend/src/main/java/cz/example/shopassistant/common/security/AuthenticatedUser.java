@@ -9,4 +9,8 @@ public interface AuthenticatedUser {
     String id();
     String email();
     String role();
+
+    default boolean isAdmin() {
+        return "ADMIN".equals(role());
+    }
 }

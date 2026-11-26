@@ -3,8 +3,8 @@ package cz.example.shopassistant.requests.web;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -55,15 +55,31 @@ public class RequestsController {
         return new PageResponse<>(result.getContent(), result.getTotalElements(), page, size);
     }
 
+    @GetMapping("/admin/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public PageResponse<CreatedRequestView> listAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+
+        Page<CreatedRequestView> result = service.listAll(page, size);
+        return new PageResponse<>(result.getContent(), result.getTotalElements(), page, size);
+    }
+
     @GetMapping("/{id}")
     public CreatedRequestView get(@PathVariable String id) {
-        String userId = currentUserId();
-        return service.get(userId, id);
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof AuthenticatedUser principal && principal.isAdmin()) {
+            return service.getAny(id);
+        }
+        return service.get(currentUserId(), id);
     }
 
     @GetMapping(value = "/{id}/events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter events(@PathVariable String id) {
-        CreatedRequestView current = service.get(currentUserId(), id);
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        CreatedRequestView current = (auth != null && auth.getPrincipal() instanceof AuthenticatedUser principal && principal.isAdmin())
+                ? service.getAny(id)
+                : service.get(currentUserId(), id);
         return eventPublisher.subscribe(new cz.example.shopassistant.requests.RequestStatusChangedEvent(
                 current.id(),
                 current.status(),

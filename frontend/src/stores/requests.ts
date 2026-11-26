@@ -1,6 +1,7 @@
 import { ref } from "vue";
 import { defineStore } from "pinia";
 import { requestsApi } from "@/api/requests.api";
+import { useAuthStore } from "@/stores/auth";
 import type { Page, ShopRequest } from "@/types";
 
 export const useRequestsStore = defineStore("requests", () => {
@@ -13,7 +14,11 @@ export const useRequestsStore = defineStore("requests", () => {
     loading.value = true;
     error.value = null;
     try {
-      const result: Page<ShopRequest> = await requestsApi.list(page, size);
+      const auth = useAuthStore();
+      // Admin vidí všechny požadavky, běžný uživatel jen své.
+      const result: Page<ShopRequest> = auth.isAdmin
+        ? await requestsApi.listAll(page, size)
+        : await requestsApi.list(page, size);
       items.value = result.items;
       total.value = result.total;
     } catch (cause) {

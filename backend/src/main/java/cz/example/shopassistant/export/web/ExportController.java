@@ -108,7 +108,9 @@ public class ExportController {
     private RequestView ownedRequest(String id) {
         RequestView request = requestsApi.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Požadavek neexistuje."));
-        if (!request.userId().equals(currentUserId())) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean admin = auth != null && auth.getPrincipal() instanceof AuthenticatedUser principal && principal.isAdmin();
+        if (!admin && !request.userId().equals(currentUserId())) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Požadavek neexistuje.");
         }
         return request;

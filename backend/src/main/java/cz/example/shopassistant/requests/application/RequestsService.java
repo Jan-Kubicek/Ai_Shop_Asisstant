@@ -88,8 +88,19 @@ public class RequestsService implements RequestsApi {
         return repository.findByUserIdOrderByCreatedAtDesc(userId, pageable).map(this::toView);
     }
 
+    public Page<CreatedRequestView> listAll(int page, int size) {
+        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100));
+        return repository.findAllByOrderByCreatedAtDesc(pageable).map(this::toView);
+    }
+
     public CreatedRequestView get(String userId, String id) {
         Request request = repository.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Požadavek neexistuje."));
+        return toView(request);
+    }
+
+    public CreatedRequestView getAny(String id) {
+        Request request = repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Požadavek neexistuje."));
         return toView(request);
     }
