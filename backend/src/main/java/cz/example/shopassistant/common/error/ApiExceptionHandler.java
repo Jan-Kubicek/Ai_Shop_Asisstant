@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -69,7 +70,9 @@ public class ApiExceptionHandler {
                 status.value(),
                 code,
                 message,
-                UUID.randomUUID().toString().substring(0, 8));
+                MDC.get(cz.example.shopassistant.common.config.TraceIdFilter.TRACE_ID) != null
+                        ? MDC.get(cz.example.shopassistant.common.config.TraceIdFilter.TRACE_ID)
+                        : UUID.randomUUID().toString().substring(0, 8));
         return ResponseEntity.status(status).body(body);
     }
 

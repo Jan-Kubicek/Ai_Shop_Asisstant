@@ -116,8 +116,10 @@ public class SecurityConfig {
         response.setStatus(status.value());
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        String traceId = org.slf4j.MDC.get(
+                cz.example.shopassistant.common.config.TraceIdFilter.TRACE_ID);
         ApiErrorBody body = new ApiErrorBody(
-                java.time.Instant.now(), status.value(), code, message, null);
+                java.time.Instant.now(), status.value(), code, message, traceId);
         response.getWriter().write(objectMapper.writeValueAsString(body));
     }
 

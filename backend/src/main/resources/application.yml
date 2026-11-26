@@ -67,6 +67,9 @@ app:
     openai-base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
     timeout-seconds: ${AI_REQUEST_TIMEOUT_SECONDS:60}
     max-retries: ${AI_MAX_RETRIES:3}
+    rate-limit:
+      attempts: ${AI_RATE_LIMIT_ATTEMPTS:20}
+      window-minutes: ${AI_RATE_LIMIT_WINDOW_MINUTES:5}
     temperature: ${AI_TEMPERATURE:0.7}
     max-tokens: ${AI_MAX_TOKENS:2048}
     cost:

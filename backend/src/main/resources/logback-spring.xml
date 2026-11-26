@@ -2,13 +2,14 @@
 <configuration>
   <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
 
-  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-    <encoder>
-      <pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level [%thread] [%X{traceId:-}] %logger{36} - %msg%n</pattern>
+  <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+      <includeMDC>true</includeMDC>
+      <customFields>{"service":"ai-shop-assistant"}</customFields>
     </encoder>
   </appender>
 
   <root level="INFO">
-    <appender-ref ref="CONSOLE"/>
+    <appender-ref ref="JSON"/>
   </root>
 </configuration>

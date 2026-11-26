@@ -73,6 +73,8 @@ public class PipelineController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Požadavek neexistuje.");
         }
 
+        aiApi.checkRateLimit(currentUserId());
+
         ResultData current = exportApi.findByRequestId(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Výsledek neexistuje."));
 

@@ -16,6 +16,8 @@ public interface AiApi {
 
     GeneratedText generateMarketingTextDetailed(String description, String tone);
 
+    void checkRateLimit(String userId);
+
     default JsonNode generateProductText(String description, String tone) {
         return generateProductTextDetailed(description, tone).json();
     }

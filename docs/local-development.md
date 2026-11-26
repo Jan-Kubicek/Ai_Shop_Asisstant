@@ -170,6 +170,13 @@ Výsledek lze upravit přes `PATCH /api/v1/requests/{id}/result` a stáhnout
 celý balík přes `GET /api/v1/requests/{id}/download` (ZIP s texty, exportem
 a fotkou).
 
+Logy běží ve strukturovaném JSON formátu. Každý HTTP požadavek dostane
+`traceId` (z hlavičky `X-Trace-Id` nebo vygenerovaný), který se objeví
+v logu i v chybové odpovědi.
+
+AI volání jsou omezena přes `AI_RATE_LIMIT_ATTEMPTS` /
+`AI_RATE_LIMIT_WINDOW_MINUTES` (výchozí 20 za 5 minut na uživatele).
+
 Denní limity se kontrolují při vytvoření požadavku: počet požadavků
 podle `User.dailyLimit` (výchozí 20) a počet modelových fotek podle
 `LIMIT_MODEL_PHOTOS_PER_DAY` (výchozí 3). Při překročení API vrátí

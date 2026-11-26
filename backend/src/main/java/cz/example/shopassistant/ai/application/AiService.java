@@ -26,11 +26,19 @@ public class AiService implements AiApi {
     private final AiTextClient client;
     private final PromptLoader promptLoader;
     private final OutputValidator validator;
+    private final AiRateLimiter rateLimiter;
 
-    public AiService(AiTextClient client, PromptLoader promptLoader, OutputValidator validator) {
+    public AiService(AiTextClient client, PromptLoader promptLoader, OutputValidator validator,
+            AiRateLimiter rateLimiter) {
         this.client = client;
         this.promptLoader = promptLoader;
         this.validator = validator;
+        this.rateLimiter = rateLimiter;
+    }
+
+    @Override
+    public void checkRateLimit(String userId) {
+        rateLimiter.check(userId);
     }
 
     @Override
