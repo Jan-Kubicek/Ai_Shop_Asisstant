@@ -9,7 +9,7 @@ name: ai-shop-assistant-dev
 
 services:
   mongo:
-    image: mongo:7
+    image: mongo:4.4
     restart: unless-stopped
     ports:
       - "27017:27017"
@@ -24,7 +24,7 @@ services:
       - ./data/mongo-dev:/data/db
       - ./infra/mongo/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      test: ["CMD", "mongo", "--quiet", "--eval", "db.adminCommand('ping').ok"]
       interval: 10s
       timeout: 5s
       retries: 5
